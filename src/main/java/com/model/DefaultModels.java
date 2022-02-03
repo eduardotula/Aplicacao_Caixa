@@ -26,29 +26,34 @@ public class DefaultModels extends DefaultTableModel{
 	private final Vector<Integer> dadoAtivo = new Vector();
 	
 
-	
-	public DefaultModels(Object[][] data, Object[] columnName, boolean[] columnEditables) {
-		super(data, columnName);
-		this.data = getDataVector();
-		this.columnEditables = columnEditables;
-	}
-	
-	
-	public DefaultModels(Object[] columnName, boolean[] columnEditables) {
-		super(columnName, 0);
-		this.data = getDataVector();
-		this.columnEditables = columnEditables;
-
+	public DefaultModels(String[] columnName) throws NullPointerException{
+		this(columnName, null, null);
 	}
 
-
-	public DefaultModels(String[] columnName, boolean[] columnEditables, Class<?>[] classesTableEsto) {
-		super(columnName, 0);
-		this.columnName = columnName;
-		this.data = getDataVector();
+	public DefaultModels(String[] columnName, Class<?>[] classesTableEsto) throws NullPointerException{
+		this(columnName, null,classesTableEsto);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public DefaultModels(String[] colName, boolean[] columnEditables, Class<?>[] classesTableEsto) throws NullPointerException{
+		super(colName,0);
+		this.columnName = colName;
 		this.columnEditables = columnEditables;
 		this.cl = classesTableEsto;
+		
+		if(columnName == null || columnName.length < 1) throw new NullPointerException("Array de nome não pode ser nulo ou vazio");
+		if(columnEditables == null) {
+			columnEditables = new boolean[columnName.length];
+			for(int i = 0;i<columnName.length;i++) columnEditables[i] = false;
+		}
+		
+		if(cl == null) {
+			cl = new Class<?>[columnName.length];
+			for(int i = 0;i<columnName.length;i++) cl[i] =  Object.class;
+		}
+		this.data = getDataVector();
 	}
+	
 
 
 	public void setColumnClass(Class<?>[] col) {

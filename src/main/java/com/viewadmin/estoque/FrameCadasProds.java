@@ -17,12 +17,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-
-import model.DBVendas;
-import model.DefaultModels;
-import model.ObjetoProdutoImport;
-import net.miginfocom.swing.MigLayout;
 import javax.swing.JTextField;
+
+import com.model.DBVendas;
+import com.model.DefaultModels;
+import com.model.ObjetoProdutoImport;
+
+import net.miginfocom.swing.MigLayout;
 
 public class FrameCadasProds extends JFrame{
 
@@ -31,7 +32,7 @@ public class FrameCadasProds extends JFrame{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private String[] columnNamesCadas = new String[] {"Cod Barra", "Descriï¿½ï¿½o", "Quantidade", "V.Custo","V.Venda"};
+	private String[] columnNamesCadas = new String[] {"Cod Barra", "Descriï¿½áo", "Quantidade", "V.Custo","V.Venda"};
 	private boolean[] columnEditablesCadas = new boolean[] {true,true,true,true,true};
 	private Class<?>[] classesTableEsto = new Class<?>[] {String.class, String.class, Integer.class, String.class, String.class};
 	private DefaultModels cadasModel = new DefaultModels(columnNamesCadas, columnEditablesCadas, classesTableEsto);
@@ -49,7 +50,7 @@ public class FrameCadasProds extends JFrame{
 	private final JButton btnSelecionarForne = new JButton("Fornecedores");
 	
 	
-	public FrameCadasProds(Connection con, ObjetoProdutoImport[] prod) {
+	public FrameCadasProds(Connection con, ObjetoProdutoImport[] prod, String[] fornece) {
 		super("Cadastrar");
 		txtFornece.setColumns(10);
 		this.con = con;
@@ -58,7 +59,17 @@ public class FrameCadasProds extends JFrame{
 		for(int i = 0;i<prod.length;i++) {
 			cadasModel.addRow(prod[i].getBasic());
 		}
-		
+		if(fornece != null) {
+			try {
+				idFornece = dbVendas.getFornecedorIdByCNPJ(fornece[1]);
+				txtFornece.setText(dbVendas.getFornecedorNomeByCNPJ(fornece[1]));
+			} catch (Exception e) {
+				idFornece = dbVendas.getDefaultFornecedor();
+				txtFornece.setText(dbVendas.getFornecedorNomeById(idFornece));
+				e.printStackTrace();
+			}
+		}
+
 
 		
 
@@ -102,7 +113,7 @@ public class FrameCadasProds extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				if(tableCadas.getCellEditor()!=null){	tableCadas.getCellEditor().stopCellEditing();}
 				try {
-					if(txtFornece.getText() != null) {
+					if(txtFornece.getText().length() > 0) {
 						while(cadasModel.getRowCount() > 0) {
 							
 							String cod = (String)cadasModel.getValueAt(0, 0);
@@ -173,8 +184,8 @@ public class FrameCadasProds extends JFrame{
 	
 
 	
-	public void addRowModel(String codB, String desc, int quanti, String valorV, String valorC) {
-		cadasModel.addRow(new Object[] {codB,desc,quanti,valorV,valorC});
+	public void addRowModel(String codB, String desc, int quanti, String valorC, String valorV) {
+		cadasModel.addRow(new Object[] {codB,desc,quanti,valorC,valorV});
 	}
 	public int getModelRowCount() {
 		return cadasModel.getRowCount();

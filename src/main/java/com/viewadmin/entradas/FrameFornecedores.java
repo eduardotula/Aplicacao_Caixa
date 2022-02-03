@@ -3,23 +3,21 @@ package com.viewadmin.entradas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-
-import net.miginfocom.swing.MigLayout;
-
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
+import com.control.TableOperations;
+import com.model.DBVendas;
+import com.model.DefaultModels;
 import com.viewadmin.FrameMenuAdmin;
 
-import control.TableOperations;
-import model.DBVendas;
-import model.DefaultModels;
-import javax.swing.JButton;
+import net.miginfocom.swing.MigLayout;
 
 public class FrameFornecedores extends JFrame {
 	/**

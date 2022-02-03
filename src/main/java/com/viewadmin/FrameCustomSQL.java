@@ -1,9 +1,5 @@
 package com.viewadmin;
 
-import javax.swing.JFrame;
-import javax.swing.JMenuBar;
-import javax.swing.JOptionPane;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
@@ -14,15 +10,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.swing.JButton;
-import net.miginfocom.swing.MigLayout;
-import javax.swing.JScrollPane;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JTextField;
-
-import model.DefaultModels;
-
+import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+import com.model.DefaultModels;
+
+import net.miginfocom.swing.MigLayout;
 
 public class FrameCustomSQL extends JFrame{
 	/**

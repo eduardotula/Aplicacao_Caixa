@@ -5,13 +5,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.regex.Pattern;
 
-import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-
-import net.miginfocom.swing.MigLayout;
-
-import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -21,10 +17,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import com.model.DefaultModels;
 import com.viewadmin.FrameMenuAdmin;
 
-import model.DBVendas;
-import model.DefaultModels;
+import net.miginfocom.swing.MigLayout;
 
 public class FrameSelecionarFornecedor{
 
@@ -91,8 +87,10 @@ public class FrameSelecionarFornecedor{
 				row[0] = rs.getInt("ID");
 				row[1] = rs.getString("NOME");
 				row[2] = rs.getString("CNPJ");
+				model.addRow(row);
 			}
-			model.addRow(row);
+			
+			System.out.println(row[1]);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

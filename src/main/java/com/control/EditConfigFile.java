@@ -67,15 +67,16 @@ public class EditConfigFile {
 			return configs;
 		} catch (Exception e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Erro ao ler arquivo de configuraï¿½ï¿½es", "Erro",
+			JOptionPane.showMessageDialog(null, "Erro ao ler arquivo de configurações", "Erro",
 					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Para gerar um novo arquivo com configurações abra administração");
 			return null;
 		}
 	}
 
 	/**
 	 * Realiza uma copia do banco de dados para o path que esta no arquivo config
-	 * Apenas uma copia do banco ï¿½ permitida por dia
+	 * Apenas uma copia do banco á permitida por dia
 	 */
 	public void backupDia(HashMap<String, String> config) {
 		String pathSave = config.getOrDefault("backuppath", null);
@@ -90,13 +91,19 @@ public class EditConfigFile {
 				Files.copy(pathBd, pToSave);
 				JOptionPane.showMessageDialog(null, "Backup concluido");
 			} catch (FileAlreadyExistsException e) {
-				System.out.println("Backup jï¿½ realizado");
+				System.out.println("Backup já realizado");
 			} catch (IOException e1) {
-				JOptionPane.showMessageDialog(null, "Falha em Fazer backup do banco", "Erro",
+				JOptionPane.showMessageDialog(null, "Falha ao Fazer backup do banco", "Erro",
 						JOptionPane.ERROR_MESSAGE);
 				e1.printStackTrace();
 			}
 		}
+	}
+	
+	/**
+	 * Cria um novo arquivo contendo parametros padrão*/
+	public void createConfigFile() {
+		
 	}
 
 }

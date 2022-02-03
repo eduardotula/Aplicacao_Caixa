@@ -1,10 +1,27 @@
 package com.viewadmin;
 
-import javax.swing.JFrame;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashMap;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import com.source.InterfaceStarter;
+import com.control.Conexao;
+import com.view.InterfaceStarter;
+import com.view.MenuStarter;
 import com.viewadmin.config.MenuConfigLoja;
 import com.viewadmin.controlecaixa.MenuControleCaixa;
 import com.viewadmin.entradas.FrameEntradas;
@@ -14,25 +31,7 @@ import com.viewadmin.relatorios.MenuRelatorios;
 import com.viewadmin.trocas.MenuTrocasDevolu;
 import com.viewadmin.vendasapagadas.MenuVendasApaga;
 
-import control.Conexao;
-
-import javax.swing.JButton;
-import java.awt.FlowLayout;
-import java.awt.Toolkit;
-
-import javax.swing.ImageIcon;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.awt.event.ActionEvent;
-import javax.swing.JLabel;
 import net.miginfocom.swing.MigLayout;
-
-import java.awt.Font;
-import java.awt.Point;
 
 
 public class FrameMenuAdmin extends JFrame{
@@ -74,13 +73,13 @@ public class FrameMenuAdmin extends JFrame{
 	private final JLabel lblConfigLoja = new JLabel("Config Loja");
 	private final JButton btnQuery = new JButton("Custom Query");
 
-	public FrameMenuAdmin(HashMap<String, String> config2) {
+	public FrameMenuAdmin() {
 		super("Menu Administrador");
 		setExtendedState(MAXIMIZED_BOTH);
 		setMinimumSize(new Dimension(800,800));
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		topPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		con = cone.getCone(config2);
+		con = cone.getCone(MenuStarter.editConfig.readConfig());
 		InterfaceStarter.setMainVisi(false);
 		addWindowListener(new WindowAdapter() {
 			 public void windowClosing(WindowEvent e) {

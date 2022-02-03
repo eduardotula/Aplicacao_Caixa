@@ -1,53 +1,47 @@
 package com.viewadmin.estoque;
 
-import model.DBVendas;
-import model.DefaultModels;
-import model.ObjetoProdutoImport;
-
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-
-import com.viewadmin.FrameFiltroData;
-
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.regex.Pattern;
-
-import javax.swing.JTextField;
-import javax.swing.RowFilter;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-
-import java.awt.event.MouseAdapter;
-import net.miginfocom.swing.MigLayout;
-import tablerenders_editor.TableRenderEstoque;
-
-import javax.swing.JRadioButton;
-import javax.swing.JMenuBar;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.RowFilter;
 import javax.swing.border.LineBorder;
-import java.awt.Color;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
+import com.control.XmlReaderFornecedor;
+import com.model.DBVendas;
+import com.model.DefaultModels;
+import com.model.ObjetoProdutoImport;
+import com.tablerenders_editor.TableRenderEstoque;
+import com.viewadmin.FrameFiltroData;
+
+import net.miginfocom.swing.MigLayout;
 
 public class MenuEstoque extends JFrame{
 
@@ -145,7 +139,7 @@ public class MenuEstoque extends JFrame{
 					}
 				}catch (Exception e2) {
 					e2.printStackTrace();
-					JOptionPane.showMessageDialog(null, "Nï¿½o ï¿½ possï¿½vel apagar o produto selecionado, Utilize o funï¿½ï¿½o de desativar");
+					JOptionPane.showMessageDialog(null, "Nï¿½o á possï¿½vel apagar o produto selecionado, Utilize o funï¿½áo de desativar");
 				}
 			}
 		});
@@ -209,7 +203,7 @@ public class MenuEstoque extends JFrame{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new FrameEstoqueImport(con, new ArrayList<ObjetoProdutoImport>());
+				new FrameEstoqueImport(con, new ArrayList<ObjetoProdutoImport>(), null);
 				dispose();
 			}
 		});
@@ -218,17 +212,32 @@ public class MenuEstoque extends JFrame{
 			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				int res = jf.showOpenDialog(new JFrame());
-				if (res == JFileChooser.APPROVE_OPTION ) {
-					String fileName = jf.getSelectedFile().toString();
-					int index = fileName.lastIndexOf('.');
-					String extension = fileName.substring(index + 1);
-					if(extension.compareTo("imp") == 0) {
-						new FrameEstoqueImport(con, txtOpener(jf.getSelectedFile().toString()));
-						dispose();
+				try {
+					FileNameExtensionFilter filter = new FileNameExtensionFilter("XML,IMP", "xml","imp");
+					jf.setAcceptAllFileFilterUsed(false);
+					jf.addChoosableFileFilter(filter);
+					int res = jf.showOpenDialog(new JFrame());
+					if (res == JFileChooser.APPROVE_OPTION ) {
+						String fileName = jf.getSelectedFile().toString();
+						int index = fileName.lastIndexOf('.');
+						String extension = fileName.substring(index + 1);
+						if(extension.compareTo("xml") == 0 || extension.compareTo("imp") == 0) {
+							XmlReaderFornecedor xml = new XmlReaderFornecedor();
+							xml.loadXml(jf.getSelectedFile());
+							
+							if(dbVendas.getFornecedorIdByCNPJ(xml.getFornecedor()[1]) == null) {
+								dbVendas.insertFornecedor(xml.getFornecedor()[0], xml.getFornecedor()[1]);
+							}
+							
+							new FrameEstoqueImport(con, xml.getMercadorias(), xml.getFornecedor());
+							dispose();
+						}else {JOptionPane.showMessageDialog(null, "Formato de arquivo invï¿½lido");}
+					}else {
+						JOptionPane.showMessageDialog(null, "Nenhum arquivo selecionado");
 					}
-				}else {
-					JOptionPane.showMessageDialog(null, "Formato de arquivo invï¿½lido");
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(null, "Falha ao abrir arquivo");
+					e.printStackTrace();
 				}
 			}
 		});
@@ -350,7 +359,7 @@ public class MenuEstoque extends JFrame{
 								+ "WHERE IDPROD = ?;";
 						
 						if(quanti != quantiAnterior) {
-							int res = JOptionPane.showConfirmDialog(null, "Nï¿½o ï¿½ aconselhavel alterar quantidade manualmente, Deseja Prosseguir?");
+							int res = JOptionPane.showConfirmDialog(null, "Nï¿½o á aconselhavel alterar quantidade manualmente, Deseja Prosseguir?");
 							System.out.println(res);
 							if(res == JOptionPane.YES_OPTION) {
 								dbVendas.UpdateItemBd(con, query, Integer.parseInt(chaves), codBarra, desc, valor, quanti, valorC);
@@ -488,45 +497,6 @@ public class MenuEstoque extends JFrame{
 		tableEstoque.getColumnModel().getColumn(5).setMinWidth(80);
 		tableEstoque.getColumnModel().getColumn(5).setMinWidth(80);
 		tableEstoque.getColumnModel().getColumn(6).setMinWidth(80);
-	}
-	public ArrayList<ObjetoProdutoImport> txtOpener(String path) {
-		HashMap<String, ObjetoProdutoImport> map = new HashMap<String, ObjetoProdutoImport>();
-		path = path.replace("\\", "/");
-		String[] line;
-		String readL;
-		try {
-			//ler 3 linhas e adicione os valores em um arrayList de arrays
-			BufferedReader reader = new BufferedReader(new FileReader(path));
-			while((readL = reader.readLine()) !=null) {
-				line = readL.split(",");
-				String cod = line[0];
-				if(cod.length() < 1 || cod.compareTo("SEM GTIN") == 0) {
-					cod = null;
-				}
-				String desc = line[1];
-				Integer quanti = (int) Double.parseDouble(line[2]);
-				Double valorCusto = Double.parseDouble(line[3]);
-				ObjetoProdutoImport prod = new ObjetoProdutoImport(cod, desc, quanti, 0.0, valorCusto);
-				if(map.containsKey(prod.getCodBa())) {
-					ObjetoProdutoImport a = map.get(prod.getCodBa());
-					a.setQuanti(a.getQuanti() + prod.getQuanti());
-				}else if(prod.getCodBa() == null) {
-					map.put(prod.getProd(), prod);
-				}else {
-					map.put(prod.getCodBa(), prod);
-					System.out.println(prod.getProd()+ " " + prod.getQuanti());
-
-				}
-			}
-			reader.close();
-			ArrayList<ObjetoProdutoImport> prods = new ArrayList<ObjetoProdutoImport>(map.values());
-			return prods;
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Falha ao importar produtos","Erro",JOptionPane.ERROR_MESSAGE);
-			return null;
-		}
 	}
 	
 	public void setProdStatus(Connection con, int status) {

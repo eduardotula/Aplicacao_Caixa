@@ -1,5 +1,7 @@
 package com.viewadmin.estoque;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.print.PrinterException;
@@ -9,32 +11,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
+import javax.swing.border.LineBorder;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
-import model.DBVendas;
-import model.DefaultModels;
-import net.miginfocom.swing.MigLayout;
-import tablerenders_editor.TableRendererCurrency;
-import tablerenders_editor.TableRendererDate;
+import com.model.DBVendas;
+import com.model.DefaultModels;
+import com.tablerenders_editor.TableRendererCurrency;
+import com.tablerenders_editor.TableRendererDate;
 
-import javax.swing.JScrollPane;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
-import java.awt.Dimension;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
+import net.miginfocom.swing.MigLayout;
 
 public class FrameMovimentacao extends JFrame{
 	private static final long serialVersionUID = 1L;
-	private DefaultModels model = new DefaultModels(new String[] {"Operaï¿½ï¿½o", "Quantidade","Custo", "Venda Total", "Data","Hora","Operador"}, 
+	private DefaultModels model = new DefaultModels(new String[] {"Operaï¿½áo", "Quantidade","Custo", "Venda Total", "Data","Hora","Operador"}, 
 			new boolean[] {false,false,false,false,false,false,false},
 			new Class<?>[] {String.class,Integer.class,Double.class,Double.class,LocalDate.class,LocalTime.class,String.class});
 	private TableRowSorter<DefaultModels> sorter = new TableRowSorter<DefaultModels>(model);

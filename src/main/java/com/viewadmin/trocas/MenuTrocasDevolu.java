@@ -1,12 +1,6 @@
 package com.viewadmin.trocas;
 
-import model.DBVendas;
-import model.DefaultModels;
-import tablerenders_editor.TableRendererCurrency;
-import tablerenders_editor.TableRendererDate;
-import tablerenders_editor.TableEditorCurrency;
-import tablerenders_editor.TableEditorDateTime;
-
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -20,11 +14,13 @@ import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
@@ -33,10 +29,14 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import control.TableOperations;
-import javax.swing.JMenuBar;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
+import com.control.TableOperations;
+import com.model.DBVendas;
+import com.model.DefaultModels;
+import com.tablerenders_editor.TableEditorCurrency;
+import com.tablerenders_editor.TableEditorDateTime;
+import com.tablerenders_editor.TableRendererCurrency;
+import com.tablerenders_editor.TableRendererDate;
+
 import net.miginfocom.swing.MigLayout;
 
 public class MenuTrocasDevolu extends JFrame {
@@ -61,7 +61,7 @@ public class MenuTrocasDevolu extends JFrame {
 	private TableRowSorter<TableModel> tableSorter;
 	private DBVendas dbVendas = new DBVendas();
 	private DefaultModels trocasModel;
-	private ArrayList<Point> arrayCordBd = new ArrayList<Point>(); // Array que armazena cordenadas de modificaï¿½ï¿½es
+	private ArrayList<Point> arrayCordBd = new ArrayList<Point>(); // Array que armazena cordenadas de modificaï¿½áes
 	private TableOperations tableOpera = new TableOperations();
 
 	// Objetos visuais
@@ -136,7 +136,7 @@ public class MenuTrocasDevolu extends JFrame {
 		// Salvar
 		// Os dados que forem atualizados suas cordenadas serï¿½o armazenadas em um array
 		// cord
-		// que em seguida ï¿½ armazenado em um arrayList
+		// que em seguida á armazenado em um arrayList
 		btnSalvar.addActionListener(new ActionListener() {
 
 			@Override
@@ -144,7 +144,7 @@ public class MenuTrocasDevolu extends JFrame {
 				int res = JOptionPane.showConfirmDialog(null, "Deseja Salvar os valores alterados?");
 				if (res == 0 && arrayCordBd.size() > 0) {
 					for (int i = 0; i < arrayCordBd.size(); i++) {
-						// Checa se o valor a ser editado ï¿½ uma data ou hora e o converte de String
+						// Checa se o valor a ser editado á uma data ou hora e o converte de String
 						// para sua respectiva classe
 
 						Point cord = arrayCordBd.get(i);

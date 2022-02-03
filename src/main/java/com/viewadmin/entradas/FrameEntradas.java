@@ -1,6 +1,8 @@
 package com.viewadmin.entradas;
 
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -12,36 +14,31 @@ import java.time.LocalTime;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.RowFilter;
+import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
+import com.model.DBVendas;
+import com.model.DefaultModels;
+import com.tablerenders_editor.TableRendererCurrency;
+import com.tablerenders_editor.TableRendererDate;
 import com.viewadmin.FrameFiltroData;
 import com.viewadmin.FrameMenuAdmin;
 
-import model.DBVendas;
-import model.DefaultModels;
-
-import javax.swing.JMenuBar;
 import net.miginfocom.swing.MigLayout;
-import tablerenders_editor.TableRendererCurrency;
-import tablerenders_editor.TableRendererDate;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import java.awt.Font;
-import java.awt.Toolkit;
-
-import javax.swing.JPanel;
-import javax.swing.border.BevelBorder;
 
 public class FrameEntradas extends JFrame {
 
@@ -58,7 +55,7 @@ public class FrameEntradas extends JFrame {
 	private JButton mntmFiltrarporData = new JButton("Filtrar Data");
 	private final JComboBox<String> comboFunciona = new JComboBox<String>();
 	private final JLabel lblBuscar = new JLabel("Buscar");
-	private String query = "SELECT F.NOME, SUM(E.VALOR_CUSTO) AS SOMA, E.DATAENTRADA, E.HORAENTRADA, OPERADOR FROM ENTRADAS E "
+	private String query = "SELECT F.NOME, SUM(E.VALOR_CUSTO * E.QUANTIDADE) AS SOMA, E.DATAENTRADA, E.HORAENTRADA, OPERADOR FROM ENTRADAS E "
 			+ "INNER JOIN FORNECEDORES F ON F.ID = E.ID_FORNECEDOR "
 			+ "GROUP BY F.NOME, E.DATAENTRADA, E.HORAENTRADA, OPERADOR";
 	private DBVendas dbVendas = new DBVendas();

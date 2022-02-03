@@ -1,10 +1,5 @@
 package com.viewadmin.controlecaixa;
 
-import model.DBVendas;
-import model.DefaultModels;
-import tablerenders_editor.TableEditorCurrency;
-import control.TableOperations;
-
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
@@ -31,6 +26,12 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+
+import com.control.TableOperations;
+import com.model.DBVendas;
+import com.model.DefaultModels;
+import com.tablerenders_editor.TableEditorCurrency;
+
 import net.miginfocom.swing.MigLayout;
 
 
@@ -50,7 +51,7 @@ public class FrameControleMovimento extends JFrame{
 	private DefaultModels modelMovimento;
 	private TableOperations tableOpera = new TableOperations();
 	private String[] columnNames = new String[]{
-		"Chave", "Operaï¿½ï¿½o","Troco Caixa", "Valor Dinheiro","Valor Cart", "Hora"};
+		"Chave", "Operaï¿½áo","Troco Caixa", "Valor Dinheiro","Valor Cart", "Hora"};
 	private String[] columnNamesDB = new String[]{
 			"ID_OPERACOES", "OPERACAO","TROCOCAIXA", "VALORDINHEIRO","VALORCART", "HORA"};
 	private String nomeTabelaBd = "OPERACOES_CAIXA";
@@ -124,7 +125,7 @@ public class FrameControleMovimento extends JFrame{
 		//Listners
 		//Salvar
 		//Os dados que forem atualizados suas cordenadas serï¿½o armazenadas em um array cord
-		//que em seguida ï¿½ armazenado em um arrayList
+		//que em seguida á armazenado em um arrayList
 		btnSalvar.addActionListener(new ActionListener() {
 			
 			@Override
@@ -132,7 +133,7 @@ public class FrameControleMovimento extends JFrame{
 				int res = JOptionPane.showConfirmDialog(null, "Deseja Salvar os valores alterados?");
 				if(res == 0 && arrayCordBd.size() > 0) {
 					for(int i = 0; i < arrayCordBd.size();i++) {
-						//Checa se o valor a ser editado ï¿½ uma data ou hora e o converte de String
+						//Checa se o valor a ser editado á uma data ou hora e o converte de String
 						//para sua respectiva classe
 						
 						Point cord = arrayCordBd.get(i);

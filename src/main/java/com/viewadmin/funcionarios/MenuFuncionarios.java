@@ -1,24 +1,24 @@
 package com.viewadmin.funcionarios;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
-import net.miginfocom.swing.MigLayout;
 import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.border.LineBorder;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import model.DBVendas;
-import model.DefaultModels;
-import javax.swing.JMenuBar;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
+import com.model.DBVendas;
+import com.model.DefaultModels;
+
+import net.miginfocom.swing.MigLayout;
 
 public class MenuFuncionarios extends JFrame{
 	/**

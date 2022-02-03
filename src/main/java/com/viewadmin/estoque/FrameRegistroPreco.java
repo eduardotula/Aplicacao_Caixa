@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -19,15 +20,17 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableColumnModel;
-import model.DefaultModels;
+
+import com.model.DefaultModels;
+import com.tablerenders_editor.TableRendererCurrency;
+import com.tablerenders_editor.TableRendererDate;
+
 import net.miginfocom.swing.MigLayout;
-import tablerenders_editor.TableRendererCurrency;
-import tablerenders_editor.TableRendererDate;
 
 public class FrameRegistroPreco extends JFrame{
 	
 	private static final long serialVersionUID = 1L;
-	private DefaultModels model = new DefaultModels(new String[] {"Operaï¿½ï¿½o","Produto", "Valor Anterior","Valor Atualizado", "Hora","Data","Operador"}, 
+	private DefaultModels model = new DefaultModels(new String[] {"Operaï¿½áo","Produto", "Valor Anterior","Valor Atualizado", "Hora","Data","Operador"}, 
 			new boolean[] {false,false,false,false,false,false,false},
 			new Class<?>[] {String.class,String.class,Double.class,Double.class,LocalTime.class,LocalDate.class,String.class});
 	//Visuais

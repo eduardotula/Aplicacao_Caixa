@@ -1,11 +1,8 @@
 package com.viewadmin.estoque;
 
-import model.DBVendas;
-import model.DefaultModels;
-import model.ObjetoProdutoImport;
-
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -17,26 +14,26 @@ import java.sql.Connection;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
-import javax.swing.JButton;
 import javax.swing.JTable;
-import net.miginfocom.swing.MigLayout;
-
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableRowSorter;
 
-import com.viewadmin.entradas.FrameFornecedores;
+import com.model.DBVendas;
+import com.model.DefaultModels;
+import com.model.ObjetoProdutoImport;
 
-import java.awt.SystemColor;
+import net.miginfocom.swing.MigLayout;
 
 public class FrameEstoqueImport extends JFrame{
 
@@ -45,7 +42,7 @@ public class FrameEstoqueImport extends JFrame{
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private String[] columnNamesImpo = new String[] {"Chave", "Cod Barra", "Descriï¿½ï¿½o",
+	private String[] columnNamesImpo = new String[] {"Chave", "Cod Barra", "Descriï¿½áo",
 			"Quantidade", "V.Custo", "V.Venda"};
 	private static String[] columnNamesEsto = new String[] {"Chave","Codigo", "Produto",
 			"Quantidade", "V.Custo", "V.Venda"};
@@ -87,7 +84,7 @@ public class FrameEstoqueImport extends JFrame{
 	private final JButton btnForneced = new JButton("Selecionar Fornecedor");
 
 	
-	public FrameEstoqueImport(Connection con, ArrayList<ObjetoProdutoImport> arrayList) {
+	public FrameEstoqueImport(Connection con, List<ObjetoProdutoImport> arrayList, String[] fornece) {
 		super("Importar");
 		txtFornecedor.setEditable(false);
 		txtFornecedor.setColumns(10);
@@ -116,7 +113,7 @@ public class FrameEstoqueImport extends JFrame{
 		dbVendas.addRowTableEstoqueImport(con, estomodel, "SELECT IDPROD, CODBARRA, DESCRICAO , QUANTIDADE, VLR_ULT_VENDA, PRECO_CUSTO FROM PRODUTOS");
 		
 		if(arrayList.size() > 0) {
-			FrameCadasProds frameCadas = new FrameCadasProds(con, new ObjetoProdutoImport[] {});
+			FrameCadasProds frameCadas = new FrameCadasProds(con, new ObjetoProdutoImport[] {},fornece);
 			for(int i = 0;i<arrayList.size();i++) {
 				ObjetoProdutoImport prodEntra = arrayList.get(i);
 				ObjetoProdutoImport prodEst = dbVendas.searchCodEstoque(con, prodEntra.getCodBa());
@@ -156,7 +153,8 @@ public class FrameEstoqueImport extends JFrame{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new FrameCadasProds(con, new ObjetoProdutoImport[] {}).addRowModel("", "", 0, "","");;
+				
+				new FrameCadasProds(con, new ObjetoProdutoImport[] {}, null).addRowModel("", "", 0, "","");
 				
 			}
 		});
@@ -233,7 +231,7 @@ public class FrameEstoqueImport extends JFrame{
 				int tam = tableImpor.getRowCount();
 				if(tableImpor.getCellEditor()!=null){	tableImpor.getCellEditor().stopCellEditing();}
 				try {
-					if(txtFornecedor.getText() != null){
+					if(txtFornecedor.getText().length() > 0){
 						for(int i = 0;i < tam;i++) {
 							int chave = (int)tableImpor.getValueAt(0, 0);
 							String cod = (String)tableImpor.getValueAt(0, 1);

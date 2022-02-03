@@ -1,0 +1,13 @@
+backup=true
+backuppath=C:\Users\loja 65\Google Drive\Backup Frente 65\Backup
+loja=Loja
+chat-set-host=false
+bancopath=localhost/C:\ProgramaFrente\VENDASN.fdb
+id-loja=1
+id-caixa=1225
+chat-host=192.168.0.139
+chat-port=4000
+chat-destinatario=Banca
+status-caixa=true
+bancofullpath=S:/ProgramaFrente/VENDASN.fdb
+setcommit=true

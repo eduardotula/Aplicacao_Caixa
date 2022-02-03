@@ -1,11 +1,19 @@
 package com.view;
 
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.RowFilter;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -15,43 +23,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
-import com.source.InterfaceStarter;
-import com.view.controlecaixa.ControleCaixa;
-import com.view.importar.ImportarEstoque;
-import com.view.pedidos.PedidosLista;
-import com.view.recarga.Recargas;
-import com.view.relatoriodia.RelatorioDia;
-import com.view.trocas.Trocas;
-
-import model.*;
-import control.*;
-import javax.swing.JButton;
-import javax.swing.border.EtchedBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.Component;
-import javax.swing.SwingConstants;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import javax.swing.JRadioButton;
 import javax.print.DocFlavor;
 import javax.print.DocPrintJob;
 import javax.print.SimpleDoc;
@@ -59,11 +31,36 @@ import javax.print.attribute.DocAttributeSet;
 import javax.print.attribute.HashDocAttributeSet;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.PrintQuality;
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.RowFilter;
+import javax.swing.SwingConstants;
+import javax.swing.border.EtchedBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
+import com.control.Conexao;
+import com.control.PrintRelatorios;
+import com.model.DBFrenteCaixa;
+import com.model.DBVendas;
+import com.model.DbGetter;
+import com.model.DefaultModels;
+import com.model.PrintBillFormat;
+import com.model.PrintPixFormat;
 
 import net.miginfocom.swing.MigLayout;
-import javax.swing.Box;
 
 public class MainVenda extends JFrame{
 	/**
@@ -72,7 +69,7 @@ public class MainVenda extends JFrame{
 	private static final long serialVersionUID = 1L;
 
 	//Componentes
-	private static DefaultTableModel modelVenda;
+	private static DefaultModels modelVenda;
 	private static DefaultModels modelProds;
 	public static ArrayList<DbGetter> objSetterDb = new ArrayList<DbGetter>(); //Array de Objetos para adicionar no BD
 	private static DbGetter prod;
@@ -89,7 +86,6 @@ public class MainVenda extends JFrame{
 	private String tipoPagamento = null;
 	public static DecimalFormat df = new DecimalFormat("R$0.###");
 	private NumberFormat nf = NumberFormat.getInstance();
-	private TableModels tm = new TableModels();
 	private static String query = "SELECT IDPROD, CODBARRA, DESCRICAO, VLR_ULT_VENDA, QUANTIDADE, ITEN_ATIVO FROM PRODUTOS WHERE ITEN_ATIVO = 1;";
 	public static int valorCaixaAberto;
 	public static Integer IdCaixa;
@@ -99,6 +95,9 @@ public class MainVenda extends JFrame{
 
 	private Class<?>[] classesTableEsto = new Class<?>[] {Integer.class, String.class, 
 		String.class, Integer.class, Double.class};
+		
+	private String[]columnNameVenda = new String[] {"Quantidade", "Produto", "Valor Uni", "Valor Total"};
+	private Class<?>[] classesTableVenda = new Class<?>[] {Integer.class, String.class, Double.class, Double.class};
 	//Componentes Visuais
 	
 	private static JTable tabelaEstoque = new JTable();
@@ -183,7 +182,7 @@ public class MainVenda extends JFrame{
 		Recargas recargas = new Recargas();
 		txtValorTot.setText(df.format(0));
 		df.setMaximumFractionDigits(2);
-		modelVenda = tm.getModelMainVenda();
+		modelVenda = new DefaultModels(columnNameVenda, classesTableVenda);
 		tabelaVendas.setModel(modelVenda);
 		resetTxts();
 		nf.setMaximumFractionDigits(3);
@@ -324,7 +323,7 @@ public class MainVenda extends JFrame{
 						e.printStackTrace();
 					}
 				}else {
-					JOptionPane.showMessageDialog(null, "Para Utilizar esta funï¿½ï¿½o apenas 1 produto ï¿½ permitido no cupom");
+					JOptionPane.showMessageDialog(null, "Para Utilizar esta funï¿½áo apenas 1 produto á permitido no cupom");
 				}
 			}
 			private JPanel getPanel() {
@@ -484,6 +483,7 @@ public class MainVenda extends JFrame{
 					LocalDate date = LocalDate.now();
 					LocalTime time = LocalTime.now();
 					
+					
 					try {
 						for(DbGetter prod : objSetterDb) {
 							System.out.println(prod.getValorUn());
@@ -499,14 +499,16 @@ public class MainVenda extends JFrame{
 							}else if((tipoPagamento != null&&tipoPagamento.compareTo("Pix") == 0) || rdnPix.isSelected()) {
 								prod.setValorCartao(prod.getValorTot());
 								prod.setTipoPagamento("Pix");
-								String cnpj = JOptionPane.showInputDialog("Chave utilizada");
-								printer(date, time, prod.getValorTot(),cnpj);
 							}else if(tipoPagamento != null && tipoPagamento.compareTo("CD") == 0){
 								prod.setTipoPagamento("CD");
 							}else {
 								new Exception();
 								JOptionPane.showMessageDialog(null, "Metodo de pagamento invalido","Erro",JOptionPane.ERROR_MESSAGE);
 							}
+						}
+						if (tipoPagamento.equals("Pix")) {
+							String cnpj = JOptionPane.showInputDialog("Chave utilizada");
+							printer(date, time, ValorTotCupom, cnpj);
 						}
 						tipoPagamento = null;
 						

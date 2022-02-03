@@ -1,26 +1,6 @@
 package com.viewadmin.controlecaixa;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-
-import net.miginfocom.swing.MigLayout;
-import tablerenders_editor.TableRenderColor;
-import tablerenders_editor.TableRendererDate;
-
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-
-import com.viewadmin.FrameFiltroData;
-import com.viewadmin.relatorios.MenuRelatorios;
-
-import model.DBVendas;
-import model.DefaultModels;
-
-import javax.swing.JButton;
-
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -28,12 +8,29 @@ import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
-import javax.swing.JMenuBar;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
+import com.model.DBVendas;
+import com.model.DefaultModels;
+import com.tablerenders_editor.TableRenderColor;
+import com.tablerenders_editor.TableRendererDate;
+import com.viewadmin.FrameFiltroData;
+import com.viewadmin.relatorios.MenuRelatorios;
+
+import net.miginfocom.swing.MigLayout;
 
 public class MenuControleCaixa extends JFrame{
 	/**
@@ -46,7 +43,7 @@ public class MenuControleCaixa extends JFrame{
 	private TableRowSorter<TableModel> tableSorter;
 	//DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 	private String[] columnNames = new String[]{
-			"Id Operaï¿½ï¿½o", "Data","Ver Vendas", "Ver Operaï¿½ï¿½es","Funcionario"};
+			"Id Operaï¿½áo", "Data","Ver Vendas", "Ver Operaï¿½áes","Funcionario"};
 		private boolean[] columnEditables = new boolean[] {false,false,false,false,false};
 
 		private Class<?>[] classesTable = new Class<?>[] {Integer.class, LocalDate.class, 
@@ -123,7 +120,7 @@ public class MenuControleCaixa extends JFrame{
 					double[] somas = dbVendas.getFechamentoSoma(con, querySoma);
 					frameSoma(somas);
 				}else {
-					JOptionPane.showMessageDialog(null, "ï¿½ Necessï¿½rio utilizar a funï¿½ï¿½o de 'Filtrar por Data' antes de exibir a soma");
+					JOptionPane.showMessageDialog(null, "á Necessï¿½rio utilizar a funï¿½áo de 'Filtrar por Data' antes de exibir a soma");
 					}
 			}
 		});
@@ -139,7 +136,7 @@ public class MenuControleCaixa extends JFrame{
 					double soma = dbVendas.getVendasSoma(con, querySoma);
 					frameSomaVendas(soma);
 				}else {
-					JOptionPane.showMessageDialog(null, "ï¿½ Necessï¿½rio utilizar a funï¿½ï¿½o de 'Filtrar por Data' antes de exibir a soma");
+					JOptionPane.showMessageDialog(null, "á Necessï¿½rio utilizar a funï¿½áo de 'Filtrar por Data' antes de exibir a soma");
 				}
 			}
 		});

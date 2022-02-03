@@ -1,13 +1,16 @@
 package com.viewadmin.relatorios;
 
-import model.DBVendas;
-import model.DefaultModels;
-import tablerenders_editor.TableRendererCurrency;
-import tablerenders_editor.TableRendererDate;
-import tablerenders_editor.TableEditorCurrency;
-import tablerenders_editor.TableEditorDateTime;
-
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.print.PrinterException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -19,44 +22,38 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-
-import com.viewadmin.FrameFiltroData;
-import com.viewadmin.FrameMenuAdmin;
-
-import control.TableOperations;
-import javax.swing.JButton;
-
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.print.PrinterException;
-import java.awt.event.ActionEvent;
+import javax.swing.JTextField;
 import javax.swing.RowFilter;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.JTextField;
-import javax.swing.JLabel;
-import java.awt.Font;
-import java.awt.Point;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
-import javax.swing.JMenuBar;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
+import com.control.TableOperations;
+import com.model.DBVendas;
+import com.model.DefaultModels;
+import com.tablerenders_editor.TableEditorCurrency;
+import com.tablerenders_editor.TableEditorDateTime;
+import com.tablerenders_editor.TableRendererCurrency;
+import com.tablerenders_editor.TableRendererDate;
+import com.viewadmin.FrameFiltroData;
+import com.viewadmin.FrameMenuAdmin;
+
 import net.miginfocom.swing.MigLayout;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
 
 public class MenuRelatorios extends JFrame {
 
@@ -86,8 +83,9 @@ public class MenuRelatorios extends JFrame {
 	private boolean[] columnEditablesGroup = new boolean[] { false, false, false, false, false, false, false };
 	private int[] columnCurrency = new int[3];
 
+	private boolean group = false;
 	private DBVendas dbVendas = new DBVendas();
-	private ArrayList<Point> arrayCordBd = new ArrayList<Point>(); // Array que armazena cordenadas de modificaï¿½ï¿½es
+	private ArrayList<Point> arrayCordBd = new ArrayList<Point>(); // Array que armazena cordenadas de modificaï¿½áes
 	private DefaultModels vendasModel;
 	private TableOperations tableOpera = new TableOperations();
 	private TableRowSorter<TableModel> tableSorter;
@@ -100,8 +98,11 @@ public class MenuRelatorios extends JFrame {
 
 	public String query = "Select V.CODESTO,P.CODBARRA,P.DESCRICAO,V.QUANTI,V.VALORUNI,V.VALORDINHEIRO,V.VALORCARTAO,V.VALORTOT,V.TIPOPAGAMENTO,C.DATA,V.HORA, V.IDPROD"
 			+ " FROM VENDAS V INNER JOIN PRODUTOS P ON V.IDPROD = P.IDPROD"
-			+ " INNER JOIN CONTROLECAIXA C ON V.CONTROLECAIXA_IDCAIXA = C.IDCAIXA "
-			+ " WHERE V.CODESTO >=1 ";
+			+ " INNER JOIN CONTROLECAIXA C ON V.CONTROLECAIXA_IDCAIXA = C.IDCAIXA " + " WHERE V.CODESTO >=1 ";
+	public String queryGroup = "Select P.CODBARRA,P.DESCRICAO,SUM(V.QUANTI) AS QUANTI "
+			+ ",SUM(V.VALORDINHEIRO) AS VALORDINHEIRO,SUM(V.VALORCARTAO) AS VALORCARTAO, "
+			+ "SUM(V.VALORTOT) AS VALORT, V.IDPROD " + "FROM VENDAS V INNER JOIN PRODUTOS P ON V.IDPROD = P.IDPROD "
+			+ "INNER JOIN CONTROLECAIXA C ON V.CONTROLECAIXA_IDCAIXA = C.IDCAIXA WHERE C.DATA IS NOT NULL ";
 	private FrameRelatorioRecargas recarga;
 	private LocalDate[] datas;
 
@@ -189,7 +190,6 @@ public class MenuRelatorios extends JFrame {
 		getContentPane().add(lblPagamento, "cell 0 0,alignx left");
 		getContentPane().add(comboPagam, "cell 0 0");
 
-
 		getContentPane().add(lblFunci, "cell 0 0");
 
 		getContentPane().add(comboFuncionario, "cell 0 0");
@@ -197,7 +197,7 @@ public class MenuRelatorios extends JFrame {
 		// Salvar
 		// Os dados que forem atualizados suas cordenadas serï¿½o armazenadas em um array
 		// cord
-		// que em seguida ï¿½ armazenado em um arrayList
+		// que em seguida á armazenado em um arrayList
 		btnSalvar.addActionListener(new ActionListener() {
 
 			@Override
@@ -205,7 +205,7 @@ public class MenuRelatorios extends JFrame {
 				int res = JOptionPane.showConfirmDialog(null, "Deseja Salvar os valores alterados?");
 				if (res == 0 && arrayCordBd.size() > 0) {
 					for (int i = 0; i < arrayCordBd.size(); i++) {
-						// Checa se o valor a ser editado ï¿½ uma data ou hora e o converte de String
+						// Checa se o valor a ser editado á uma data ou hora e o converte de String
 						// para sua respectiva classe
 
 						Point cord = arrayCordBd.get(i);
@@ -369,20 +369,17 @@ public class MenuRelatorios extends JFrame {
 				filtro.setGroupBtn(true);
 				filtro.startGUIFiltroEsto();
 				datas = filtro.getData();
-				boolean group = filtro.getGroup();
+				boolean grou = filtro.getGroup();
 				if (datas[0] != null && datas[1] != null) {
-					if (group == false) {
+					if (grou == false) {
+						group = false;
 						addFiltro("DATA", String.format("C.DATA BETWEEN '%s' AND '%s'", datas[0].toString(),
 								datas[1].toString()));
+
 					} else {
-						String querygroup = String.format("Select P.CODBARRA,P.DESCRICAO,SUM(V.QUANTI) AS QUANTI "
-								+ ",SUM(V.VALORDINHEIRO) AS VALORDINHEIRO,SUM(V.VALORCARTAO) AS VALORCARTAO, "
-								+ "SUM(V.VALORTOT) AS VALORT, V.IDPROD "
-								+ "FROM VENDAS V INNER JOIN PRODUTOS P ON V.IDPROD = P.IDPROD "
-								+ "INNER JOIN CONTROLECAIXA C ON V.CONTROLECAIXA_IDCAIXA = C.IDCAIXA "
-								+ "WHERE C.DATA BETWEEN '%s' AND '%s' " + "GROUP BY P.CODBARRA,P.DESCRICAO,V.IDPROD;",
-								datas[0].toString(), datas[1].toString());
-						setModelGroup(con, querygroup);
+						group = true;
+						addFiltro("DATA", String.format("C.DATA BETWEEN '%s' AND '%s'", datas[0].toString(),
+								datas[1].toString()));
 					}
 				}
 
@@ -397,12 +394,21 @@ public class MenuRelatorios extends JFrame {
 	 */
 	private void addFiltro(String key, String filtro) {
 		filtros.put(key, filtro);
-		setModelNoGroupFiltro();
+		if (group) {
+			setModelGroupFiltro();
+		} else {
+			setModelNoGroupFiltro();
+		}
+
 	}
 
 	private void removeFiltro(String key) {
 		filtros.put(key, null);
-		setModelNoGroupFiltro();
+		if (group) {
+			setModelGroupFiltro();
+		} else {
+			setModelNoGroupFiltro();
+		}
 	}
 
 	private void getFuncio() {
@@ -422,6 +428,17 @@ public class MenuRelatorios extends JFrame {
 		}
 		q = q + " ORDER BY V.CODESTO DESC";
 		setModelNoGroup(FrameMenuAdmin.con, q);
+	}
+
+	private void setModelGroupFiltro() {
+		String q = queryGroup;
+		for (Entry<String, String> filtro : filtros.entrySet()) {
+			if (filtro.getValue() != null) {
+				q = q + String.format("AND %s ", filtro.getValue());
+			}
+		}
+		q = q + "GROUP BY P.CODBARRA,P.DESCRICAO,V.IDPROD;";
+		setModelGroup(FrameMenuAdmin.con, q);
 	}
 
 	public void setModelNoGroup(Connection con, String query) {
@@ -454,7 +471,7 @@ public class MenuRelatorios extends JFrame {
 		columnCurrency = new int[] { 3, 4, 5 };
 		tableSorter = new TableRowSorter<TableModel>(vendasModel);
 		tableVendas.setRowSorter(tableSorter);
-		setbtnStatus(false);
+		//setbtnStatus(false);
 		somarColunaView(columnCurrency);
 		TableColumnModel m = tableVendas.getColumnModel();
 		m.getColumn(3).setCellRenderer(TableRendererCurrency.getCurrencyRenderer());
@@ -498,8 +515,6 @@ public class MenuRelatorios extends JFrame {
 		}
 
 	}
-
-
 
 	public void somarColunaView(int[] columnCurrency) {
 		Double somaDinheiro = 0.0;

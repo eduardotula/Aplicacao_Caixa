@@ -1,8 +1,5 @@
 package com.viewadmin.config;
 
-import javax.swing.JFrame;
-import net.miginfocom.swing.MigLayout;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -13,12 +10,13 @@ import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-
-import javax.swing.JComboBox;
+import net.miginfocom.swing.MigLayout;
 
 public class MenuConfigLoja extends JFrame{
 	private static final long serialVersionUID = 1L;
@@ -32,7 +30,7 @@ public class MenuConfigLoja extends JFrame{
 	private JButton btnCancelar = new JButton("Cancelar");
 	private JButton btnSalvar = new JButton("Salvar");
 	public MenuConfigLoja(Connection con) {
-		super("Configuraï¿½ï¿½es da Loja");
+		super("Configuraï¿½áes da Loja");
 		this.con = con;
 		createAndShowGUI();
 		setListeners();

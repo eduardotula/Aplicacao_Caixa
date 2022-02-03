@@ -14,17 +14,34 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import com.model.DBVendas;
 import com.model.DefaultModels;
+
 
 public class TableOperations {
 
-
+	private DBVendas dbVendas = new DBVendas();
+	
+	public void ApagarSelecioTabela(Connection con, DefaultTableModel tableModel, JTable tabela, String query){
+		try {
+			int[] selectRows = tabela.getSelectedRows();
+			for(int row : selectRows) {
+				int modelRow = tabela.convertRowIndexToModel(row);
+				System.out.println("Apagar "+ modelRow);
+				int id = (int) tableModel.getValueAt(modelRow, 0);
+				dbVendas.deletaritem(con, query, id);
+			}
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Nï¿½o foi possï¿½vel apagar linha selecionada","Erro",JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
+	}
 	public void UpdateTabelaEditado(Connection con, Object dado, int chave,String chaveNome, String tabelaNome, String columnNome, Point cords) {
 		//con : Conexao com o banco
 		//dado : dado a ser inserido
 		//chave : chave do campo atualizado
 		//chaveNome : nome da coluna chave no banco
-		//tabelaNome : nome da tabela ï¿½ ser atualizado
+		//tabelaNome : nome da tabela á ser atualizado
 		//columnNome : nome da coluna a ser atualizada no banco
 		//cords : cordendas do valo na tabela
 		String query = "UPDATE " + tabelaNome + " SET " + columnNome +" = ? WHERE " + chaveNome + " = ?";

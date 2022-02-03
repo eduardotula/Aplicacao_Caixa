@@ -1,41 +1,39 @@
 package com.viewadmin.entradas;
 
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuBar;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableRowSorter;
-
-import model.DBVendas;
-import model.DefaultModels;
-import net.miginfocom.swing.MigLayout;
-import tablerenders_editor.TableRendererCurrency;
-
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
 
-import java.awt.Color;
-import java.awt.Dimension;
+import com.model.DBVendas;
+import com.model.DefaultModels;
+import com.tablerenders_editor.TableRendererCurrency;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import java.awt.Font;
-import javax.swing.border.BevelBorder;
+import net.miginfocom.swing.MigLayout;
 
 public class MenuItemEntrada extends JFrame{
 	private static final long serialVersionUID = 1L;
 	
 	//Colunas e Classes de colunas
-	private String[] columnNames = new String[] {"ID", "Cod Barra", "Descriï¿½ï¿½o",
+	private String[] columnNames = new String[] {"ID", "Cod Barra", "Descriï¿½áo",
 			"Quantidade","V.Custo","V.Venda", "Operador"};
 	private  boolean[] columnEditables = new boolean[] {false,false,false,false,false,false,false};
 	private Class<?>[] classesTable = new Class<?>[] {Integer.class, String.class, String.class,
