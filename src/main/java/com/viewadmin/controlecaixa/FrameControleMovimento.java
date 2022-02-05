@@ -9,6 +9,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.print.PrinterException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
@@ -28,7 +29,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import com.control.TableOperations;
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.tablerenders_editor.TableEditorCurrency;
 
@@ -47,11 +48,10 @@ public class FrameControleMovimento extends JFrame{
 	 */
 	private TableRowSorter<TableModel> tableSorter;
 	private ArrayList<Point> arrayCordBd = new ArrayList<Point>();
-	private DBVendas dbVendas = new DBVendas();
 	private DefaultModels modelMovimento;
 	private TableOperations tableOpera = new TableOperations();
 	private String[] columnNames = new String[]{
-		"Chave", "Operaï¿½áo","Troco Caixa", "Valor Dinheiro","Valor Cart", "Hora"};
+		"Chave", "Operação","Troco Caixa", "Valor Dinheiro","Valor Cart", "Hora"};
 	private String[] columnNamesDB = new String[]{
 			"ID_OPERACOES", "OPERACAO","TROCOCAIXA", "VALORDINHEIRO","VALORCART", "HORA"};
 	private String nomeTabelaBd = "OPERACOES_CAIXA";
@@ -86,7 +86,14 @@ public class FrameControleMovimento extends JFrame{
 		
 		
 		modelMovimento = new DefaultModels(columnNames, columnEditables, classesTable);
-		dbVendas.addRowTableCaixa(con, chaveSele, modelMovimento);
+		try {
+			DBOperations.appendAnyTable(con, "SELECT ID_OPERACOES, OPERACAO, TROCOCAIXA, VALORDINHEIRO, VALORCART"
+						+ ", HORA FROM OPERACOES_CAIXA WHERE CONTROLECAIXA_IDCAIXA = ?;", modelMovimento, chaveSele);
+		} catch (ClassCastException e2) {
+			e2.printStackTrace();
+		} catch (SQLException e2) {
+			e2.printStackTrace();
+		}
 		tableMovimento.setModel(modelMovimento);
 		tableSorter = new TableRowSorter<TableModel>(modelMovimento);
 		tableMovimento.setRowSorter(tableSorter);
@@ -124,7 +131,7 @@ public class FrameControleMovimento extends JFrame{
 
 		//Listners
 		//Salvar
-		//Os dados que forem atualizados suas cordenadas serï¿½o armazenadas em um array cord
+		//Os dados que forem atualizados suas cordenadas serão armazenadas em um array cord
 		//que em seguida á armazenado em um arrayList
 		btnSalvar.addActionListener(new ActionListener() {
 			

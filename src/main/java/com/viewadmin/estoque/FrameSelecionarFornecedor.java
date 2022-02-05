@@ -26,7 +26,7 @@ public class FrameSelecionarFornecedor{
 
 	private JTable table;
 	private JTextField txtBusca;
-	private DefaultModels model = new DefaultModels(new String[]{"Id","Razï¿½o Social","CNPJ"},
+	private DefaultModels model = new DefaultModels(new String[]{"Id","Razão Social","CNPJ"},
 			new boolean[] {false,false,false,false},
 			new Class<?>[] {Integer.class,String.class,String.class});
 	private TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);

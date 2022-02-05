@@ -13,7 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import com.model.DBFrenteCaixa;
-import com.model.DBVendas;
+import com.model.DBOperations;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -22,7 +22,6 @@ public class AbrirCaixa extends JFrame{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private DBVendas dbVendas = new DBVendas();
 	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
 	//Visuais
 	private JTextField txtTroco = new JTextField();
@@ -72,10 +71,16 @@ public class AbrirCaixa extends JFrame{
 	}
 
 	private void getFuncionario(Connection con) {
-		String[] funcio = dbVendas.getFuncionario(con);
-		DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>(funcio);
-		model.addElement("");
-		func.setModel(model);
-		
+		String[] funcio;
+		try {
+			funcio = (String[]) DBOperations.selectSql1Dimen(con, "SELECT NOME FROM FUNCIONARIOS",new String[0]);
+			DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>(funcio);
+			model.addElement("");
+			func.setModel(model);
+		} catch (Exception e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Falha ao carregar lista de funcionarios","Erro",JOptionPane.ERROR_MESSAGE);
+		}
+
 	}
 }

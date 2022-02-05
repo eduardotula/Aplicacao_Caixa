@@ -22,15 +22,13 @@ public class PrintRelatoriosFechaFormat implements Printable{
 	private ArrayList<Recarga> recargas = new ArrayList<Recarga>();
 	private Time lc;
 	private String funcio;
-	private double soma;
 	private double troco;
 	private double dinhe;
 	private double cart;
 	private double pix;
-	public void passArrayList(ArrayList<PrintRelatoriosProds> prods, double soma, Time hora,String funcio, double troco,double dinhe,
+	public void passArrayList(ArrayList<PrintRelatoriosProds> prods,Time hora,String funcio, double troco,double dinhe,
 			double cart,double pix, ArrayList<Recarga> recargas) {
 		this.prodsArray = prods;
-		this.soma = soma;
 		this.funcio = funcio;
 		this.lc = hora;
 		this.troco = troco;
@@ -100,7 +98,7 @@ public class PrintRelatoriosFechaFormat implements Printable{
 	            g2d.drawString("   "+ "Caixa:", -3, y);y+=yShift;
 	            g2d.drawString("   "+ "Troco: "+df.format(troco), -3, y);y+=yShift;
 	            g2d.drawString("   "+ "Retirada Dinheiro: "+df.format(dinhe), -3, y);y+=yShift;
-	            g2d.drawString("   "+ "Retirada Cartï¿½o: "+df.format(cart), -3, y);y+=yShift;
+	            g2d.drawString("   "+ "Retirada Cartão: "+df.format(cart), -3, y);y+=yShift;
 	            g2d.drawString("   "+ "Retirada Pix: "+df.format(pix), -3, y);y+=yShift;
 	            g2d.drawLine(-3, y, 190, y);y+=yShift;
 	            for(Recarga recarga : recargas) {

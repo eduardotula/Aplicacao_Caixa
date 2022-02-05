@@ -2,6 +2,7 @@ package com.viewadmin.controlecaixa;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 
@@ -9,15 +10,17 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.TableColumnModel;
 
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.tablerenders_editor.TableRendererCurrency;
 import com.tablerenders_editor.TableRendererDate;
+import com.viewadmin.FrameMenuAdmin;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -28,11 +31,10 @@ public class FrameRelatorioMensal extends JFrame{
 	private static final long serialVersionUID = 1L;
 	private JTable table;
 	private JButton btnExportar = new JButton("ExportarCSV");
-	private String[] columnName = new String[] {"Data", "V.Dinheiro","V.Cartï¿½o","V.Total","V.Recargas"};
+	private String[] columnName = new String[] {"Data", "V.Dinheiro","V.Cartão","V.Total","V.Recargas"};
 	private boolean[] columnEditables = new boolean[] {false,false,false,false,false};
 	private Class<?>[] classesTableEsto = new Class<?>[] {LocalDate.class,Double.class,Double.class,Double.class,Double.class};
 	private DefaultModels model = new DefaultModels(columnName, columnEditables, classesTableEsto);
-	private DBVendas dbVendas = new DBVendas();
 	private JTextField txtRecargas;
 	private JTextField txtTotal;
 	private JTextField txtCart;
@@ -118,7 +120,12 @@ public class FrameRelatorioMensal extends JFrame{
 					+ "INNER JOIN VENDAS V ON C.IDCAIXA = V.CONTROLECAIXA_IDCAIXA "
 					+ "GROUP BY C.DATA ";
 		}
-		dbVendas.appendAnyTable(query, 5, model, dataF);
+		try {
+			DBOperations.appendAnyTable(FrameMenuAdmin.con, query, model, dataF[0],dataF[1]);
+		} catch (Exception e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Falha ao atualizar","Erro",JOptionPane.ERROR_MESSAGE);
+		} 
 		txtDinheiro.setText(df.format(model.sumColumn(1)));
 		txtCart.setText(df.format(model.sumColumn(2)));
 		txtTotal.setText(df.format(model.sumColumn(3)));

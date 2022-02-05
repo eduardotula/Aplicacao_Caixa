@@ -25,7 +25,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.tablerenders_editor.TableRendererCurrency;
 import com.tablerenders_editor.TableRendererDate;
@@ -34,11 +34,11 @@ import net.miginfocom.swing.MigLayout;
 
 public class FrameMovimentacao extends JFrame{
 	private static final long serialVersionUID = 1L;
-	private DefaultModels model = new DefaultModels(new String[] {"Operaï¿½áo", "Quantidade","Custo", "Venda Total", "Data","Hora","Operador"}, 
+	private DefaultModels model = new DefaultModels(new String[] {"Operação", "Quantidade","Custo", "Venda Total", "Data","Hora","Operador"}, 
 			new boolean[] {false,false,false,false,false,false,false},
 			new Class<?>[] {String.class,Integer.class,Double.class,Double.class,LocalDate.class,LocalTime.class,String.class});
 	private TableRowSorter<DefaultModels> sorter = new TableRowSorter<DefaultModels>(model);
-	private DBVendas dbVendas = new DBVendas();
+	private DBOperations dbVendas = new DBOperations();
 	private List<RowSorter.SortKey> sorterKeys = new ArrayList<>();
 	private int columnIndexToSort = 4;
 	//Visuais

@@ -76,7 +76,7 @@ public class Fechamento extends JFrame{
 						double somaTot = dbFrente.convertTable(con, prodTabela, idCaixa);
 						dbFrente.setCaixaAberto(con, 0);
 						System.out.println(prodTabela.size() + somaTot +time.toString()+ dinhe+ troco+cart+ func);
-						printer(prodTabela, recargas,somaTot,time, dinhe, troco,cart,pix, func);
+						printer(prodTabela, recargas,time, dinhe, troco,cart,pix, func);
 						MainVenda.valorCaixaAberto = 0;
 						MainVenda.IdCaixa = null;
 						dispose();
@@ -85,7 +85,7 @@ public class Fechamento extends JFrame{
 					}
 				}catch (Exception e2) {
 					e2.printStackTrace();
-					JOptionPane.showMessageDialog(null, "Dados Invï¿½lidos");
+					JOptionPane.showMessageDialog(null, "Dados Invãlidos");
 				}
 			}
 		});
@@ -117,9 +117,9 @@ public class Fechamento extends JFrame{
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setSize(225,168);
 	}
-	private void printer(ArrayList<PrintRelatoriosProds> setterDb,ArrayList<Recarga> recargas,double soma, Time time, double dinhe, double troco, double cart,double pix, String func) {
+	private void printer(ArrayList<PrintRelatoriosProds> setterDb,ArrayList<Recarga> recargas, Time time, double dinhe, double troco, double cart,double pix, String func) {
 	    PrintRelatoriosFechaFormat bf = new PrintRelatoriosFechaFormat();
-	    bf.passArrayList(setterDb,soma, time, func, troco, dinhe, cart,pix, recargas);
+	    bf.passArrayList(setterDb, time, func, troco, dinhe, cart,pix, recargas);
 	    printRelatorios.printer(bf,dbFrente.getImpressora(con));
 
 	    

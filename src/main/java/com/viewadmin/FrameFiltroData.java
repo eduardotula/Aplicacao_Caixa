@@ -78,7 +78,7 @@ public class FrameFiltroData{
           return localD;
       }catch (Exception e) {
     	  e.printStackTrace();
-    	  JOptionPane.showMessageDialog(null, "Data Invï¿½lida");
+    	  JOptionPane.showMessageDialog(null, "Data Invãlida");
       }
       return null;
     }

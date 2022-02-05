@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -31,24 +32,23 @@ import javax.swing.table.TableRowSorter;
 import javax.swing.text.MaskFormatter;
 
 import com.model.DBFrenteCaixa;
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DbGetter;
 import com.model.DefaultModels;
 import com.tablerenders_editor.TableRendererCurrency;
 
 import net.miginfocom.swing.MigLayout;
 
-public class Trocas extends JFrame{
+public class Trocas extends JFrame {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private Connection con;
-	private DBVendas dbVendas = new DBVendas();
 	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
 	private DateTimeFormatter format = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-	
-	//Visuais
+
+	// Visuais
 	private JTextField txtCodBarra = new JTextField();
 	private JTextField txtDescricao = new JTextField();
 	private JTextField txtValorCompra = new JTextField("0.00");
@@ -69,14 +69,13 @@ public class Trocas extends JFrame{
 	private JButton btnFinalizar = new JButton("Finalizar");
 	private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 
-	
 	public Trocas(Connection con) {
 		super("Trocar");
 		this.con = con;
 		createAndShowGUI();
 		setListeners();
 	}
-	
+
 	public void createAndShowGUI() {
 		getContentPane().setLayout(new MigLayout("", "[327px][4px][91px,grow]", "[367px][23px]"));
 		getContentPane().add(tabbedPane, "cell 0 0 3 1,grow");
@@ -108,11 +107,12 @@ public class Trocas extends JFrame{
 		getContentPane().add(btnFinalizar, "cell 2 1,alignx right");
 		btnFinalizar.setEnabled(true);
 		txtAreaDescricao.setLineWrap(true);
-		setSize(400,438);
+		setSize(400, 438);
 		setLocationRelativeTo(null);
 		setVisible(false);
-		
+
 	}
+
 	public void setFormattedText() {
 		try {
 			MaskFormatter mask = new MaskFormatter("##/##/####");
@@ -122,61 +122,82 @@ public class Trocas extends JFrame{
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void setListeners() {
-		
+
 		btnFinalizar.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
+					DBOperations.startTransaction(con);
 					Integer id = Integer.parseInt(txtChave.getText());
 					Double valor = Double.parseDouble(txtValorCompra.getText());
 					String data = txtData.getText();
 					String desc = txtAreaDescricao.getText();
 					LocalDate dataAgora = LocalDate.now();
 					LocalTime horaAgora = LocalTime.now();
-					boolean a = false;
-					if(rdnDefeito.isSelected()) {
-						a = trocaComDefeito(id, valor, data, desc, dataAgora, horaAgora);
-						if(a&& rdnDinheiro.isSelected()) { atualizarVenda(id, valor, data, desc, dataAgora, horaAgora, "Troca dinheiro Devolvido");}
-						else if(a){
+					if (rdnDefeito.isSelected()) {
+						trocaComDefeito(id, valor, data, desc, dataAgora, horaAgora);
+						if (rdnDinheiro.isSelected()) {
+							atualizarVenda(id, valor, data, desc, dataAgora, horaAgora, "Troca dinheiro Devolvido");
+						} else {
 							atualizarVenda(id, valor, data, desc, dataAgora, horaAgora, "Troca");
 						}
-						
-					}else if(!rdnDefeito.isSelected()){
-						a = trocaSemDefeito(id, valor, data, desc, dataAgora, horaAgora);
-						if(a && rdnDinheiro.isSelected()) { atualizarVenda(id, valor, data, desc, dataAgora, horaAgora, "Troca dinheiro Devolvido");}
-						else if(a) {
-							atualizarVenda(id,valor, data, desc, dataAgora, horaAgora, "Troca");
+
+					} else if (!rdnDefeito.isSelected()) {
+						trocaSemDefeito(id, valor, data, desc, dataAgora, horaAgora);
+						if (rdnDinheiro.isSelected()) {
+							atualizarVenda(id, valor, data, desc, dataAgora, horaAgora, "Troca dinheiro Devolvido");
+						} else {
+							atualizarVenda(id, valor, data, desc, dataAgora, horaAgora, "Troca");
 						}
 					}
-				}catch (Exception e2) {
-					JOptionPane.showMessageDialog(null, "Falha");
-					e2.printStackTrace();
+					DBOperations.commit(con);
+				} catch (NumberFormatException e1) {
+					JOptionPane.showMessageDialog(null, "Valores inválidos","Erro",JOptionPane.ERROR_MESSAGE);
+					e1.printStackTrace();
+					DBOperations.rollBack(con);
+				} catch (ClassCastException e1) {
+					JOptionPane.showMessageDialog(null, "Valores inválidos","Erro",JOptionPane.ERROR_MESSAGE);
+					e1.printStackTrace();
+					DBOperations.rollBack(con);
+				} catch (SQLException e1) {
+					JOptionPane.showMessageDialog(null, "Falha ao salvar","Erro",JOptionPane.ERROR_MESSAGE);
+					e1.printStackTrace();
+					DBOperations.rollBack(con);
 				}
 			}
 		});
 		btnBuscar.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				buscarProdEstoque();
 			}
 		});
 	}
-	
+
 	private void buscarProdEstoque() {
 		JFrame frame = new JFrame();
 		JTable tabelaEstoque = new JTable();
 		JTextField txtBusca = new JTextField();
 		JScrollPane scrollPane = new JScrollPane();
 		JButton btnConfirmar = new JButton("Confirmar");
-		DefaultModels modelEstoque = new DefaultModels(new String[] {"ID", "CodBarra", "Descriï¿½áo","Quantidade", "Valor Venda"},
-				new boolean[] {false,false,false,false,false}, 
-				new Class<?>[] {Integer.class,String.class,String.class,Integer.class,Double.class});
+		DefaultModels modelEstoque = new DefaultModels(
+				new String[] { "ID", "CodBarra", "Descrição", "Quantidade", "Valor Venda" },
+				new boolean[] { false, false, false, false, false },
+				new Class<?>[] { Integer.class, String.class, String.class, Integer.class, Double.class });
 		TableRowSorter<DefaultModels> sorter = new TableRowSorter<DefaultModels>(modelEstoque);
-		dbVendas.addRowTableEstoqueVenda(con, modelEstoque, "SELECT IDPROD, CODBARRA, DESCRICAO, VLR_ULT_VENDA, QUANTIDADE, ITEN_ATIVO FROM PRODUTOS WHERE ITEN_ATIVO = 1;");
+		try {
+			DBOperations.appendAnyTable(con,
+					"SELECT IDPROD, CODBARRA, DESCRICAO, VLR_ULT_VENDA, QUANTIDADE, ITEN_ATIVO FROM PRODUTOS WHERE ITEN_ATIVO = 1;",
+					modelEstoque);
+		} catch (ClassCastException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
 		tabelaEstoque.setModel(modelEstoque);
 		tabelaEstoque.getColumnModel().getColumn(2).setPreferredWidth(400);
 		tabelaEstoque.getColumnModel().getColumn(0).setPreferredWidth(60);
@@ -189,10 +210,10 @@ public class Trocas extends JFrame{
 		scrollPane.setViewportView(tabelaEstoque);
 		frame.getContentPane().add(btnConfirmar, "cell 0 0");
 		frame.setVisible(true);
-		frame.setSize(800,400);
+		frame.setSize(800, 400);
 		frame.setLocationRelativeTo(null);
 		btnConfirmar.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int row = tabelaEstoque.getSelectedRow();
@@ -206,72 +227,104 @@ public class Trocas extends JFrame{
 				frame.dispose();
 			}
 		});
-		
-		//Double Click na tabela estoque
+
+		// Double Click na tabela estoque
 		tabelaEstoque.addMouseListener(new MouseAdapter() {
-			
+
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				if(arg0.getClickCount() == 2) {
+				if (arg0.getClickCount() == 2) {
 					btnConfirmar.doClick();
 				}
 			}
 		});
 		txtBusca.getDocument().addDocumentListener(new DocumentListener() {
-			
+
 			@Override
 			public void removeUpdate(DocumentEvent arg0) {
 				String text = txtBusca.getText();
 				if (txtBusca.getText().length() == 0) {
 					sorter.setRowFilter(null);
 				} else {
-					sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text))); // Ordena rows com a flag de
+					sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text))); // Ordena rows com a flag
+																								// de
 					tabelaEstoque.getSelectionModel().setSelectionInterval(0, 0);
 				}
 			}
-			
+
 			@Override
 			public void insertUpdate(DocumentEvent arg0) {
 				String text = txtBusca.getText();
 				if (txtBusca.getText().length() == 0) {
 					sorter.setRowFilter(null);
 				} else {
-					sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text))); // Ordena rows com a flag de
+					sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text))); // Ordena rows com a flag
+																								// de
 					tabelaEstoque.getSelectionModel().setSelectionInterval(0, 0);
 				}
 			}
-			
+
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
 				String text = txtBusca.getText();
 				if (txtBusca.getText().length() == 0) {
 					sorter.setRowFilter(null);
 				} else {
-					sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text))); // Ordena rows com a flag de
+					sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text))); // Ordena rows com a flag
+																								// de
 					tabelaEstoque.getSelectionModel().setSelectionInterval(0, 0);
 				}
 			}
 		});
 	}
-	
-	private boolean trocaComDefeito(Integer id, Double valor, String data, String desc, LocalDate dataAgora,
-			LocalTime horaAgora) {
-		return dbVendas.setTroca(con, valor, id, LocalDate.parse(data, format), dataAgora, horaAgora, desc);
-	
+
+	/**
+	 * Troca com defeito.
+	 *
+	 * @param id the id
+	 * @param valor the valor
+	 * @param data the data
+	 * @param desc the desc
+	 * @param dataAgora the data agora
+	 * @param horaAgora the hora agora
+	 * @throws ClassCastException the class cast exception
+	 * @throws SQLException the SQL exception
+	 */
+	private void trocaComDefeito(Integer id, Double valor, String data, String desc, LocalDate dataAgora,
+			LocalTime horaAgora) throws ClassCastException, SQLException {
+		DBOperations.DmlSql(con, "INSERT INTO TROCAS VALUES (NULL, ?, ?, ?, ?, ?, ?)", valor, id,
+				LocalDate.parse(data, format), dataAgora, horaAgora, desc);
+
 	}
-	private boolean trocaSemDefeito(Integer id, Double valor, String data, String desc, LocalDate dataAgora,
-			LocalTime horaAgora) {
-		dbVendas.addProdEntradas(con, 1, 0.0,0.0, id, dataAgora, horaAgora, dbFrente.getFuncioCaixaAtual(con),dbVendas.getDefaultFornecedor());
-		dbVendas.UpdateItemBdQuantiplus(con, id, 2);
-		return dbVendas.setTroca(con, valor, id, LocalDate.parse(data, format), dataAgora, horaAgora, desc);
+
+	/**
+	 * Troca sem defeito.
+	 *
+	 * @param id the id
+	 * @param valor the valor
+	 * @param data the data
+	 * @param desc the desc
+	 * @param dataAgora the data agora
+	 * @param horaAgora the hora agora
+	 * @throws ClassCastException the class cast exception
+	 * @throws SQLException the SQL exception
+	 */
+	private void trocaSemDefeito(Integer id, Double valor, String data, String desc, LocalDate dataAgora,
+			LocalTime horaAgora) throws ClassCastException, SQLException {
+		DBOperations.DmlSql(con, "INSERT INTO ENTRADAS VALUES (NULL, ?,?, ?, ?, ?, ?,?,?)", 1, 0.0, 0.0, id, dataAgora,
+				horaAgora, dbFrente.getFuncioCaixaAtual(con), 1);
+		DBOperations.DmlSql(con, "UPDATE PRODUTOS SET QUANTIDADE = QUANTIDADE + ? WHERE IDPROD = ?", 1, id);
+		DBOperations.DmlSql(con, "INSERT INTO TROCAS VALUES (NULL, ?, ?, ?, ?, ?, ?)", valor, id,
+				LocalDate.parse(data, format), dataAgora, horaAgora, desc);
 	}
+
 	private void atualizarVenda(Integer id, Double valor, String data, String desc, LocalDate dataAgora,
 			LocalTime horaAgora, String opera) {
 		System.out.println(opera);
 		ArrayList<DbGetter> arr = new ArrayList<DbGetter>();
-		arr.add(new DbGetter(id, null, opera, 1, -valor, -valor, -valor, 0,"T"));
+		arr.add(new DbGetter(id, null, opera, 1, -valor, -valor, -valor, 0, "T"));
 		System.out.println(arr.get(0).getDescricao());
-		dbFrente.updateVendas(arr, con, dataAgora , horaAgora);
+		dbFrente.updateVendas(arr, con, dataAgora, horaAgora);
 		dispose();
 	}
 }

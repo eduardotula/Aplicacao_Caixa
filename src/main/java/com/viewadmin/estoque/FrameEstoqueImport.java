@@ -29,7 +29,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableRowSorter;
 
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.model.ObjetoProdutoImport;
 
@@ -42,7 +42,7 @@ public class FrameEstoqueImport extends JFrame{
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private String[] columnNamesImpo = new String[] {"Chave", "Cod Barra", "Descriï¿½áo",
+	private String[] columnNamesImpo = new String[] {"Chave", "Cod Barra", "Descrição",
 			"Quantidade", "V.Custo", "V.Venda"};
 	private static String[] columnNamesEsto = new String[] {"Chave","Codigo", "Produto",
 			"Quantidade", "V.Custo", "V.Venda"};
@@ -52,7 +52,7 @@ public class FrameEstoqueImport extends JFrame{
 		String.class, Integer.class, Double.class, Double.class};
 	private Class<?>[] classesTableImpo = new Class<?>[] {Integer.class, String.class,
 		String.class, Integer.class, Double.class, Double.class};
-	private static DBVendas dbVendas = new DBVendas();
+	private static DBOperations dbVendas = new DBOperations();
 	private NumberFormat nf = NumberFormat.getInstance();
 	private static DefaultModels estomodel;
 	private static TableRowSorter<DefaultModels> rowSorterEsto;
@@ -203,7 +203,7 @@ public class FrameEstoqueImport extends JFrame{
 					limparCampos();
 				}catch (Exception e2) {
 					e2.printStackTrace();
-					JOptionPane.showMessageDialog(null, "Quantidade ou Valor Invï¿½lido");
+					JOptionPane.showMessageDialog(null, "Quantidade ou Valor Invãlido");
 				}
 			}
 		});
@@ -253,7 +253,7 @@ public class FrameEstoqueImport extends JFrame{
 						}
 						JOptionPane.showMessageDialog(null, "Produtos Importados com Sucesso");
 					}else {
-						JOptionPane.showMessageDialog(null, "Fornecedor nï¿½o selecionado");
+						JOptionPane.showMessageDialog(null, "Fornecedor não selecionado");
 					}
 
 					

@@ -4,6 +4,7 @@ package com.viewadmin.entradas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.sql.SQLException;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -23,9 +24,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.tablerenders_editor.TableRendererCurrency;
+import com.viewadmin.FrameMenuAdmin;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -33,14 +35,14 @@ public class MenuItemEntrada extends JFrame{
 	private static final long serialVersionUID = 1L;
 	
 	//Colunas e Classes de colunas
-	private String[] columnNames = new String[] {"ID", "Cod Barra", "Descriï¿½áo",
+	private String[] columnNames = new String[] {"ID", "Cod Barra", "Descrição",
 			"Quantidade","V.Custo","V.Venda", "Operador"};
 	private  boolean[] columnEditables = new boolean[] {false,false,false,false,false,false,false};
 	private Class<?>[] classesTable = new Class<?>[] {Integer.class, String.class, String.class,
 		Integer.class,Double.class,Double.class,String.class};
 
 	private DefaultModels entradaModel;
-	private DBVendas dbVendas = new DBVendas();
+	private DBOperations dbVendas = new DBOperations();
 	private TableRowSorter<DefaultModels> sorter;
 	private String query;
 	//Visuais
@@ -149,8 +151,13 @@ public class MenuItemEntrada extends JFrame{
 	
 	public void refreshTable() {
 		entradaModel = new DefaultModels(columnNames, columnEditables, classesTable);
-		dbVendas.appendAnyTable(query, 7, entradaModel, null);
-		
+		try {
+			DBOperations.appendAnyTable(FrameMenuAdmin.con, query, entradaModel);
+		} catch (ClassCastException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		panel.add(lblFuncio, "cell 1 0,alignx left,aligny bottom");
 		sorter = new TableRowSorter<DefaultModels>(entradaModel);
 		tableEntrada.setModel(entradaModel);

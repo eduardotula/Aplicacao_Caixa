@@ -24,7 +24,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 
 import net.miginfocom.swing.MigLayout;
@@ -35,7 +35,7 @@ public class FrameRelatorioEstoque extends JFrame{
 			new boolean[] {false,false,false,false,false,false},
 			new Class<?>[] {Integer.class,String.class,String.class,Integer.class,Integer.class,Integer.class});
 	private TableRowSorter<DefaultModels> sorter = new TableRowSorter<DefaultModels>(model);
-	private DBVendas dbVendas = new DBVendas();
+	private DBOperations dbVendas = new DBOperations();
 	//Visuais
 	private final JTable tabelaMovimento = new JTable();
 	private final JMenuBar menuBar = new JMenuBar();

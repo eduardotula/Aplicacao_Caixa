@@ -34,7 +34,7 @@ public class PrintRelatorios {
 	}
 
 	public void choosePrintType(JTable table, Printable printable) {
-		String res = (String) JOptionPane.showInputDialog(null, "Tipo da Impressï¿½o", "Impressï¿½o",
+		String res = (String) JOptionPane.showInputDialog(null, "Tipo da Impressão", "Impressão",
 				JOptionPane.PLAIN_MESSAGE, null, new String[] { "Termica", "Impressora" }, "Termica");
 		if (res.contentEquals("Impressora")) {
 			try {
@@ -74,7 +74,7 @@ public class PrintRelatorios {
 			job.print(doc, null);
 
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(new JFrame(), "Falha na Impressï¿½o");
+			JOptionPane.showMessageDialog(new JFrame(), "Falha na Impressão");
 
 			e.printStackTrace();
 		}

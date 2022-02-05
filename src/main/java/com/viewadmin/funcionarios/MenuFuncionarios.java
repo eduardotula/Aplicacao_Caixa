@@ -15,7 +15,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 
 import net.miginfocom.swing.MigLayout;
@@ -26,7 +26,7 @@ public class MenuFuncionarios extends JFrame{
 	 */
 	private static final long serialVersionUID = 1L;
 	private JTable table = new JTable();
-	private DBVendas dbVendas = new DBVendas();
+	private DBOperations dbVendas = new DBOperations();
 	private String[] columnNamesFunc = new String[] {"Id","Nome"};
 	private boolean[] columnEditables = new boolean[] {false,false};
 	private Class<?>[] classesTableFunc = new Class<?>[] {Integer.class, String.class};
@@ -63,7 +63,7 @@ public class MenuFuncionarios extends JFrame{
 							dbVendas.addFuncio(con, nome);
 							refreshTable(con);
 						}else {
-							JOptionPane.showMessageDialog(null, "Nome Invï¿½lido");
+							JOptionPane.showMessageDialog(null, "Nome Invãlido");
 						}
 					}
 				});

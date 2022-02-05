@@ -14,13 +14,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 
 
 public class TableOperations {
 
-	private DBVendas dbVendas = new DBVendas();
+	private DBOperations dbVendas = new DBOperations();
 	
 	public void ApagarSelecioTabela(Connection con, DefaultTableModel tableModel, JTable tabela, String query){
 		try {
@@ -29,10 +29,10 @@ public class TableOperations {
 				int modelRow = tabela.convertRowIndexToModel(row);
 				System.out.println("Apagar "+ modelRow);
 				int id = (int) tableModel.getValueAt(modelRow, 0);
-				dbVendas.deletaritem(con, query, id);
+				dbVendas.DmlSql(con, query, new Integer[] {id});
 			}
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, "Nï¿½o foi possï¿½vel apagar linha selecionada","Erro",JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Não foi possãvel apagar linha selecionada","Erro",JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 	}

@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -31,7 +32,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.tablerenders_editor.TableRendererCurrency;
 import com.tablerenders_editor.TableRendererDate;
@@ -45,7 +46,7 @@ public class FrameEntradas extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JTable table;
 	private DefaultModels model = new DefaultModels(
-			new String[] {"Razï¿½o Social", "V.Total", "Data", "Hora", "Funcionario" },
+			new String[] { "Razão Social", "V.Total", "Data", "Hora", "Funcionario" },
 			new boolean[] { false, false, false, false, false },
 			new Class<?>[] { String.class, Double.class, LocalDate.class, LocalTime.class, String.class });
 
@@ -55,10 +56,6 @@ public class FrameEntradas extends JFrame {
 	private JButton mntmFiltrarporData = new JButton("Filtrar Data");
 	private final JComboBox<String> comboFunciona = new JComboBox<String>();
 	private final JLabel lblBuscar = new JLabel("Buscar");
-	private String query = "SELECT F.NOME, SUM(E.VALOR_CUSTO * E.QUANTIDADE) AS SOMA, E.DATAENTRADA, E.HORAENTRADA, OPERADOR FROM ENTRADAS E "
-			+ "INNER JOIN FORNECEDORES F ON F.ID = E.ID_FORNECEDOR "
-			+ "GROUP BY F.NOME, E.DATAENTRADA, E.HORAENTRADA, OPERADOR";
-	private DBVendas dbVendas = new DBVendas();
 	private DefaultComboBoxModel<String> comboModel;
 	private TableRowSorter<DefaultModels> sorter;
 	private final JLabel lblFuncionario = new JLabel("Funcionario");
@@ -66,6 +63,7 @@ public class FrameEntradas extends JFrame {
 	private final JTextField txtBusca = new JTextField();
 	private final JButton btnFornecedores = new JButton("Fornecedores");
 	private FrameFornecedores forne;
+
 	public FrameEntradas() {
 		super("Entradas");
 		txtBusca.setColumns(10);
@@ -96,7 +94,7 @@ public class FrameEntradas extends JFrame {
 		menuBar.add(mntmFiltrarporData);
 
 		menuBar.add(mntmExportrarCSV);
-		
+
 		menuBar.add(btnFornecedores);
 
 		panel.add(lblFuncionario, "cell 1 0");
@@ -111,7 +109,7 @@ public class FrameEntradas extends JFrame {
 		setMinimumSize(new Dimension(511, 400));
 		setLocationRelativeTo(null);
 		setVisible(false);
-		
+
 	}
 
 	private void setList() {
@@ -160,7 +158,6 @@ public class FrameEntradas extends JFrame {
 			}
 		});
 
-
 		comboFunciona.addActionListener(new ActionListener() {
 
 			@Override
@@ -196,8 +193,10 @@ public class FrameEntradas extends JFrame {
 						}
 						System.out.println(query);
 						menuItemEntrada = new MenuItemEntrada(query, data.toString(), time.toString(), funcionario);
-						menuItemEntrada.setSize(Toolkit.getDefaultToolkit().getScreenSize().width/2,FrameMenuAdmin.sizeOffset);
-						menuItemEntrada.setLocation(Toolkit.getDefaultToolkit().getScreenSize().width/2-17, FrameMenuAdmin.btnOffset);
+						menuItemEntrada.setSize(Toolkit.getDefaultToolkit().getScreenSize().width / 2,
+								FrameMenuAdmin.sizeOffset);
+						menuItemEntrada.setLocation(Toolkit.getDefaultToolkit().getScreenSize().width / 2 - 17,
+								FrameMenuAdmin.btnOffset);
 						System.out.println(menuItemEntrada.getWidth());
 					}
 				} catch (Exception e) {
@@ -206,27 +205,35 @@ public class FrameEntradas extends JFrame {
 			}
 		});
 		btnFornecedores.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(forne != null) { forne.dispose(); forne = null;}
+				if (forne != null) {
+					forne.dispose();
+					forne = null;
+				}
 				forne = new FrameFornecedores();
-				
-				
+
 			}
 		});
 	}
 
 	public void refreshTable() {
 		model.removeAllRows();
-		DBVendas dbVendas = new DBVendas();
-		dbVendas.appendAnyTable(query, 5, model, null);
 		comboModel = new DefaultComboBoxModel<String>();
 		comboModel.addElement("");
-
-		for (String funcio : dbVendas.getFuncionario(FrameMenuAdmin.con)) {
-			comboModel.addElement(funcio);
+		String[] f;
+		try {
+			f = DBOperations.selectSql1Dimen(FrameMenuAdmin.con, "SELECT NOME FROM FUNCIONARIOS", new String[0]);
+			for (String funcio : f) {
+				comboModel.addElement(funcio);
+			}
+		} catch (ClassCastException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
+
 		comboFunciona.setModel(comboModel);
 		setRenders();
 		comboFunciona.setSelectedIndex(0);
@@ -234,12 +241,25 @@ public class FrameEntradas extends JFrame {
 
 	private void refreshTablebyDate(LocalDate inicial, LocalDate dataFin) {
 		model.removeAllRows();
-		dbVendas.getEntradaByDate(FrameMenuAdmin.con, inicial, dataFin, model);
-		comboModel = new DefaultComboBoxModel<String>();
-		comboModel.addElement("");
+		try {
+			DBOperations.appendAnyTable(FrameMenuAdmin.con,
+					"SELECT F.NOME, SUM(E.VALOR_CUSTO) AS SOMA, E.DATAENTRADA, E.HORAENTRADA, OPERADOR FROM ENTRADAS E "
+							+ "INNER JOIN FORNECEDORES F ON F.ID = E.ID_FORNECEDOR "
+							+ "WHERE E.DATAENTRADA BETWEEN ? AND ? "
+							+ "GROUP BY F.NOME, E.DATAENTRADA, E.HORAENTRADA, OPERADOR;",
+					model, inicial, dataFin);
+			comboModel = new DefaultComboBoxModel<String>();
+			comboModel.addElement("");
 
-		for (String funcio : dbVendas.getFuncionario(FrameMenuAdmin.con)) {
-			comboModel.addElement(funcio);
+			String[] f;
+			f = DBOperations.selectSql1Dimen(FrameMenuAdmin.con, "SELECT NOME FROM FUNCIONARIOS", new String[0]);
+			for (String funcio : f) {
+				comboModel.addElement(funcio);
+			}
+		} catch (ClassCastException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		comboFunciona.setModel(comboModel);
 		setRenders();

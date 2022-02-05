@@ -52,7 +52,7 @@ public class TableEditorDateTime extends DefaultCellEditor
         {
             JTextField textField = (JTextField)getComponent();
             textField.setBorder(new LineBorder(Color.red));
-            JOptionPane.showMessageDialog(null, "Insira um Valor Vï¿½lido");
+            JOptionPane.showMessageDialog(null, "Insira um Valor Vãlido");
             return false;
         }
 
@@ -64,7 +64,7 @@ public class TableEditorDateTime extends DefaultCellEditor
         JTable table, Object value, boolean isSelected, int row, int column)
     {
     	
-    	//retorna a string que á exibido no campo de ediï¿½áo
+    	//retorna a string que á exibido no campo de edição
         Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
 
         JTextField textField = (JTextField)c;

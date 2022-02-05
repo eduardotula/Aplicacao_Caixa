@@ -104,7 +104,7 @@ public class ControleCaixa extends JFrame{
 					new AbrirCaixa(con);
 					dispose();
 				}else {
-					JOptionPane.showMessageDialog(null, "Caixa jï¿½ Aberto");
+					JOptionPane.showMessageDialog(null, "Caixa jã Aberto");
 				}
 			}
 		});
@@ -152,11 +152,11 @@ public void updateFrame(Connection con) {
 				double[] valores = dbFrente.getControleCaixaValuesById(con, idCaixa);
 				ArrayList<PrintRelatoriosProds> setterDb = new ArrayList<PrintRelatoriosProds>();
 				ArrayList<Recarga> recargas = dbFrente.getRecargas(con, idCaixa);
-				double somaTot = convertTable(con, setterDb, idCaixa);
+				convertTable(con, setterDb, idCaixa);
 			    PrintRelatoriosFechaFormat bf = new PrintRelatoriosFechaFormat();
 			    Time time = java.sql.Time.valueOf(LocalTime.now());
 			    String func = dbFrente.getFuncioCaixaAtual(con);
-			    bf.passArrayList(setterDb,somaTot, time, func, valores[0], valores[2], valores[1],valores[3],recargas);
+			    bf.passArrayList(setterDb, time, func, valores[0], valores[2], valores[1],valores[3],recargas);
 			    printRelatorios.printer(bf,dbFrente.getImpressora(con));
 			}catch (Exception e) {
 				e.printStackTrace();
@@ -193,7 +193,7 @@ public void updateFrame(Connection con) {
 
 			return somaTot;
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, "Nï¿½o foi Possï¿½vel Salvar, Chece os valores e tente Novamento");
+			JOptionPane.showMessageDialog(null, "Não foi Possãvel Salvar, Chece os valores e tente Novamento");
 			e.printStackTrace();
 			return 0.0;
 		}

@@ -16,15 +16,33 @@ import java.util.Map;
 
 import javax.swing.JOptionPane;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class EditConfigFile.
+ */
 public class EditConfigFile {
 
+	/** The file. */
 	private String file;
+	
+	/** The configs. */
 	private HashMap<String, String> configs = new HashMap<String, String>();
 
+	/**
+	 * Instantiates a new edits the config file.
+	 *
+	 * @param file the file
+	 */
 	public EditConfigFile(String file) {
 		this.file = file;
 	}
 
+	/**
+	 * Salvar config.
+	 *
+	 * @param key the key
+	 * @param value the value
+	 */
 	public void salvarConfig(String key, String value) {
 		try {
 			readConfig();
@@ -49,6 +67,11 @@ public class EditConfigFile {
 		}
 	}
 
+	/**
+	 * Read config.
+	 *
+	 * @return the hash map
+	 */
 	public HashMap<String, String> readConfig() {
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(new File("config.txt")));
@@ -76,7 +99,9 @@ public class EditConfigFile {
 
 	/**
 	 * Realiza uma copia do banco de dados para o path que esta no arquivo config
-	 * Apenas uma copia do banco á permitida por dia
+	 * Apenas uma copia do banco á permitida por dia.
+	 *
+	 * @param config the config
 	 */
 	public void backupDia(HashMap<String, String> config) {
 		String pathSave = config.getOrDefault("backuppath", null);
@@ -101,7 +126,8 @@ public class EditConfigFile {
 	}
 	
 	/**
-	 * Cria um novo arquivo contendo parametros padrão*/
+	 * Cria um novo arquivo contendo parametros padrão.
+	 */
 	public void createConfigFile() {
 		
 	}

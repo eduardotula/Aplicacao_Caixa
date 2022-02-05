@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ import javax.swing.table.TableRowSorter;
 import com.control.PrintRelatorios;
 import com.control.TableOperations;
 import com.model.DBFrenteCaixa;
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.model.PrintDiaFormat;
 import com.model.PrintRelatoriosProds;
@@ -42,12 +43,11 @@ public class RelatorioDia extends JFrame{
 	private TableRowSorter<TableModel> sorterDia;
 	private DecimalFormat nf = new DecimalFormat("R$0.##");
 	private DefaultModels model = new DefaultModels(new String[] {
-			"ID", "Codigo ", "Descriï¿½áo", "Quantidade","Unitario", "Dinheiro", "Cartï¿½o", "Total","Tipo", "Hora","IDEstoque"}
+			"ID", "Codigo ", "Descrição", "Quantidade","Unitario", "Dinheiro", "Cartão", "Total","Tipo", "Hora","IDEstoque"}
 	, new boolean[] {false,false,false,false,false,false,false,false,false,false},
 	new Class<?>[] {Integer.class,String.class,String.class,Integer.class,Double.class,Double.class,Double.class,Double.class,String.class,LocalTime.class,Integer.class});
 	private TableOperations tableOpera = new TableOperations();
 	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
-	private DBVendas dbVendas = new DBVendas();
 	//Objetos Visuais
 	private JTable tableVendaDia = new JTable();
 	JScrollPane scrollPane = new JScrollPane();
@@ -109,13 +109,19 @@ public class RelatorioDia extends JFrame{
 							int modelRow = tableVendaDia.convertRowIndexToModel(row);
 							int id = (int) model.getValueAt(modelRow, 10);
 							int quanti = (int) model.getValueAt(modelRow, 3);
-							dbVendas.UpdateItemBdQuantiplus(con, id, quanti);
+							DBOperations.DmlSql(con, "UPDATE PRODUTOS SET QUANTIDADE = QUANTIDADE + ? WHERE IDPROD = ?", quanti,id);
 						}
 						updateTable(con);
 					}
 				}catch(ArrayIndexOutOfBoundsException a) {
 					a.printStackTrace();
 					JOptionPane.showMessageDialog(new JFrame("Erro"), "Nenhum Item Selecionado");
+				} catch (ClassCastException e1) {
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(new JFrame("Erro"), "Falha ao deletar");
+				} catch (SQLException e1) {
+					JOptionPane.showMessageDialog(new JFrame("Erro"), "Falha ao deletar");
+					e1.printStackTrace();
 				}
 			}
 		});

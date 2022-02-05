@@ -35,7 +35,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import com.control.XmlReaderFornecedor;
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.model.ObjetoProdutoImport;
 import com.tablerenders_editor.TableRenderEstoque;
@@ -51,7 +51,7 @@ public class MenuEstoque extends JFrame{
 	private static final long serialVersionUID = 1L;
 	private TableRowSorter<TableModel> tableSorterVendas;
 	private DefaultModels tableModel;
-	private DBVendas dbVendas = new DBVendas();
+	private DBOperations dbVendas = new DBOperations();
 	private String simpleQuery = "SELECT IDPROD, CODBARRA, DESCRICAO, QUANTIDADE, VLR_ULT_VENDA,DATA_ULT_VENDA,PRECO_CUSTO, ITEN_ATIVO FROM PRODUTOS WHERE ITEN_ATIVO = 1";
 	private String[] columnNamesEsto = new String[] {"Chave","Codigo", "Produto",
 			"Quantidade", "V.Custo", "V.Venda","Ult.Venda"};
@@ -139,7 +139,7 @@ public class MenuEstoque extends JFrame{
 					}
 				}catch (Exception e2) {
 					e2.printStackTrace();
-					JOptionPane.showMessageDialog(null, "Nï¿½o á possï¿½vel apagar o produto selecionado, Utilize o funï¿½áo de desativar");
+					JOptionPane.showMessageDialog(null, "Não á possãvel apagar o produto selecionado, Utilize o função de desativar");
 				}
 			}
 		});
@@ -189,7 +189,7 @@ public class MenuEstoque extends JFrame{
 								limparCampos();
 								refreshFrame(con, simpleQuery);
 							}	
-						}else { JOptionPane.showMessageDialog(null, "Use o Botï¿½o de Salvar");}
+						}else { JOptionPane.showMessageDialog(null, "Use o Botão de Salvar");}
 					}else {
 						JOptionPane.showMessageDialog(new JFrame(), "Dados Invalidos");
 					}
@@ -231,7 +231,7 @@ public class MenuEstoque extends JFrame{
 							
 							new FrameEstoqueImport(con, xml.getMercadorias(), xml.getFornecedor());
 							dispose();
-						}else {JOptionPane.showMessageDialog(null, "Formato de arquivo invï¿½lido");}
+						}else {JOptionPane.showMessageDialog(null, "Formato de arquivo invãlido");}
 					}else {
 						JOptionPane.showMessageDialog(null, "Nenhum arquivo selecionado");
 					}
@@ -359,13 +359,13 @@ public class MenuEstoque extends JFrame{
 								+ "WHERE IDPROD = ?;";
 						
 						if(quanti != quantiAnterior) {
-							int res = JOptionPane.showConfirmDialog(null, "Nï¿½o á aconselhavel alterar quantidade manualmente, Deseja Prosseguir?");
+							int res = JOptionPane.showConfirmDialog(null, "Não á aconselhavel alterar quantidade manualmente, Deseja Prosseguir?");
 							System.out.println(res);
 							if(res == JOptionPane.YES_OPTION) {
 								dbVendas.UpdateItemBd(con, query, Integer.parseInt(chaves), codBarra, desc, valor, quanti, valorC);
 								dbVendas.addProdEntradas(con, quanti - quantiAnterior,valorC,valor, Integer.parseInt(chaves), LocalDate.now(), LocalTime.now(), "Administrador",dbVendas.getDefaultFornecedor());
 							}else {
-								JOptionPane.showMessageDialog(null, "Dados nï¿½o salvos","Erro",JOptionPane.ERROR_MESSAGE);
+								JOptionPane.showMessageDialog(null, "Dados não salvos","Erro",JOptionPane.ERROR_MESSAGE);
 							}
 							
 						}else {
@@ -375,7 +375,7 @@ public class MenuEstoque extends JFrame{
 						refreshFrame(con, simpleQuery);
 						limparCampos();
 					}else {
-						JOptionPane.showMessageDialog(new JFrame(), "Para Adicionar Novo item, clique no Botï¿½o Adicionar");
+						JOptionPane.showMessageDialog(new JFrame(), "Para Adicionar Novo item, clique no Botão Adicionar");
 					}
 				} catch (Exception e1) {
 					JOptionPane.showMessageDialog(null, "Dados Incorretos");

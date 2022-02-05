@@ -43,8 +43,8 @@ public class XmlReaderFornecedor {
 	}
 
 	/**
-	 * Obtem Razï¿½o social e CNPJ
-	 * @return String[2]{Razï¿½o social,CNPJ}*/
+	 * Obtem Razão social e CNPJ
+	 * @return String[2]{Razão social,CNPJ}*/
 	public String[] getFornecedor() {
 		String[] inf = new String[2];
 		System.out.println(doc.getDocumentElement().getNodeName());
@@ -88,7 +88,7 @@ public class XmlReaderFornecedor {
 				return nodeF.getTextContent();
 			}
 		}
-		throw new NullPointerException("Node nï¿½o encontrado");
+		throw new NullPointerException("Node não encontrado");
 	}
 	
 }

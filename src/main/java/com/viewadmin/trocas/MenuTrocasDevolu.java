@@ -30,7 +30,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import com.control.TableOperations;
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.tablerenders_editor.TableEditorCurrency;
 import com.tablerenders_editor.TableEditorDateTime;
@@ -59,9 +59,9 @@ public class MenuTrocasDevolu extends JFrame {
 	private Class<?>[] classesTable = new Class<?>[] { Integer.class, String.class, String.class, Double.class,
 			LocalDate.class, LocalDate.class, LocalTime.class, String.class };
 	private TableRowSorter<TableModel> tableSorter;
-	private DBVendas dbVendas = new DBVendas();
+	private DBOperations dbVendas = new DBOperations();
 	private DefaultModels trocasModel;
-	private ArrayList<Point> arrayCordBd = new ArrayList<Point>(); // Array que armazena cordenadas de modificaï¿½áes
+	private ArrayList<Point> arrayCordBd = new ArrayList<Point>(); // Array que armazena cordenadas de modificaãáes
 	private TableOperations tableOpera = new TableOperations();
 
 	// Objetos visuais
@@ -134,7 +134,7 @@ public class MenuTrocasDevolu extends JFrame {
 
 		// Listners
 		// Salvar
-		// Os dados que forem atualizados suas cordenadas serï¿½o armazenadas em um array
+		// Os dados que forem atualizados suas cordenadas serão armazenadas em um array
 		// cord
 		// que em seguida á armazenado em um arrayList
 		btnSalvar.addActionListener(new ActionListener() {

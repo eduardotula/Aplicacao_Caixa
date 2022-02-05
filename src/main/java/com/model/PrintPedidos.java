@@ -97,7 +97,7 @@ public class PrintPedidos implements Printable {
 
 	public static class PrintLista implements Printable {
 
-		private List<Object[]> lista; // Formato String:CodBarra, String:Descriï¿½áo, String:Observaï¿½áo, LocalDate:Data
+		private List<Object[]> lista; // Formato String:CodBarra, String:Descrição, String:Observação, LocalDate:Data
 		private LocalTime lc;
 
 		public void passArrayList(LocalTime hora, List<Object[]> lista) {

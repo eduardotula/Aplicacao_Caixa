@@ -70,7 +70,7 @@ public class PrintBillFormat implements Printable{
 
 	            g2d.drawLine(-3, y, 190, y);y+=yShift;
 
-	            g2d.drawString(" NOME DO ITEM                 PREï¿½O   ",-3,y);y+=yShift;
+	            g2d.drawString(" NOME DO ITEM                 PREãO   ",-3,y);y+=yShift;
 	            g2d.drawLine(-3, y, 190, y);y+=yShift;
 	            g2d.setFont(new Font("Monospaced",Font.BOLD,7));
 	            for(int s=0; s<r; s++)

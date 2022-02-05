@@ -31,7 +31,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import com.control.TableOperations;
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.tablerenders_editor.TableEditorCurrency;
 import com.tablerenders_editor.TableEditorDateTime;
@@ -51,7 +51,7 @@ public class MenuVendasApaga extends JFrame{
 	 */
 	//Colunas e Classes de colunas
 	private String[] columnNames = new String[] {
-			"Chave", "Cod Devolvido", "Produto Devolvido","Quanti", "Dinheiro","Cartï¿½o", "Valor Total", "Data Venda","Hora Venda",
+			"Chave", "Cod Devolvido", "Produto Devolvido","Quanti", "Dinheiro","Cartão", "Valor Total", "Data Venda","Hora Venda",
 			"Data Apagado","Hora Apagado", "Motivo"};
 	private String[] columnNamesDB = new String[]{
 			"IDPRODS", "Cod Devolvido", "Produto Devolvido","QUANTI" ,"VALORDINHEIRO","VALORCARTAO","VALORTOT","DATAVENDA","HORAVENDA",
@@ -63,7 +63,7 @@ public class MenuVendasApaga extends JFrame{
 		String.class};
 	private TableRowSorter<TableModel> tableSorter;
 	private DefaultModels apagaModel;
-	private DBVendas dbVendas = new DBVendas();
+	private DBOperations dbVendas = new DBOperations();
 	private TableOperations tableOpera = new TableOperations();
 	private ArrayList<Point> arrayCordBd = new ArrayList<Point>();
 
@@ -124,7 +124,7 @@ public class MenuVendasApaga extends JFrame{
 						getContentPane().add(btnSalvar, "cell 0 3");
 				
 						//Salvar
-						//Os dados que forem atualizados suas cordenadas serï¿½o armazenadas em um array cord
+						//Os dados que forem atualizados suas cordenadas serão armazenadas em um array cord
 						//que em seguida á armazenado em um arrayList
 						btnSalvar.addActionListener(new ActionListener() {
 							

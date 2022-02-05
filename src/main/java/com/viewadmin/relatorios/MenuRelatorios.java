@@ -44,7 +44,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import com.control.TableOperations;
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.tablerenders_editor.TableEditorCurrency;
 import com.tablerenders_editor.TableEditorDateTime;
@@ -66,7 +66,7 @@ public class MenuRelatorios extends JFrame {
 	 */
 	// Colunas e Classes de colunas
 	private String[] columnNamesNoGroup = new String[] { "Chave", "Cod Barra", "Descri\u00E7\u00E3o", "Quantidade",
-			"Valor Uni", "Valor Dinheiro", "Valor Cartï¿½o", "Valor Total", "Pagamento", "Data Venda", "Hora da Venda",
+			"Valor Uni", "Valor Dinheiro", "Valor Cartão", "Valor Total", "Pagamento", "Data Venda", "Hora da Venda",
 			"IDPROD" };
 	private String[] columnNamesDB = new String[] { "CODESTO", "CODBARRA", "DESCRICAO", "QUANTI", "VALORUNI",
 			"VALORDINHEIRO", "VALORCARTAO", "VALORTOT", "TIPOPAGAMENTO", "DATA", "HORA", "IDPROD" };
@@ -77,15 +77,15 @@ public class MenuRelatorios extends JFrame {
 			Double.class, Double.class, Double.class, Double.class, String.class, LocalDate.class, LocalTime.class,
 			Integer.class };
 	private String[] columnNamesGroup = new String[] { "Cod Barra", "Descri\u00E7\u00E3o", "Soma Quanti",
-			"Soma Dinheiro", "Soma Cartï¿½o", "Soma Valor", "IDPROD" };
+			"Soma Dinheiro", "Soma Cartão", "Soma Valor", "IDPROD" };
 	private Class<?>[] classesTableGroup = new Class<?>[] { String.class, String.class, Integer.class, Double.class,
 			Double.class, Double.class, Integer.class };
 	private boolean[] columnEditablesGroup = new boolean[] { false, false, false, false, false, false, false };
 	private int[] columnCurrency = new int[3];
 
 	private boolean group = false;
-	private DBVendas dbVendas = new DBVendas();
-	private ArrayList<Point> arrayCordBd = new ArrayList<Point>(); // Array que armazena cordenadas de modificaï¿½áes
+	private DBOperations dbVendas = new DBOperations();
+	private ArrayList<Point> arrayCordBd = new ArrayList<Point>(); // Array que armazena cordenadas de modificaãáes
 	private DefaultModels vendasModel;
 	private TableOperations tableOpera = new TableOperations();
 	private TableRowSorter<TableModel> tableSorter;
@@ -195,7 +195,7 @@ public class MenuRelatorios extends JFrame {
 		getContentPane().add(comboFuncionario, "cell 0 0");
 		// Listners
 		// Salvar
-		// Os dados que forem atualizados suas cordenadas serï¿½o armazenadas em um array
+		// Os dados que forem atualizados suas cordenadas serão armazenadas em um array
 		// cord
 		// que em seguida á armazenado em um arrayList
 		btnSalvar.addActionListener(new ActionListener() {
@@ -232,7 +232,7 @@ public class MenuRelatorios extends JFrame {
 					String paga = (String) comboPagam.getSelectedItem();
 					if (paga.contentEquals("Dinheiro")) {
 						paga = "D";
-					} else if (paga.contentEquals("Cartï¿½o")) {
+					} else if (paga.contentEquals("Cartão")) {
 						paga = "C";
 					} else if (paga.contentEquals("Pix")) {
 						paga = "P";

@@ -30,7 +30,7 @@ public class MenuConfigLoja extends JFrame{
 	private JButton btnCancelar = new JButton("Cancelar");
 	private JButton btnSalvar = new JButton("Salvar");
 	public MenuConfigLoja(Connection con) {
-		super("Configuraï¿½áes da Loja");
+		super("Configuraãáes da Loja");
 		this.con = con;
 		createAndShowGUI();
 		setListeners();

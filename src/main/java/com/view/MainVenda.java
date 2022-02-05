@@ -15,6 +15,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -54,7 +55,7 @@ import javax.swing.table.TableRowSorter;
 import com.control.Conexao;
 import com.control.PrintRelatorios;
 import com.model.DBFrenteCaixa;
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DbGetter;
 import com.model.DefaultModels;
 import com.model.PrintBillFormat;
@@ -62,20 +63,19 @@ import com.model.PrintPixFormat;
 
 import net.miginfocom.swing.MigLayout;
 
-public class MainVenda extends JFrame{
+public class MainVenda extends JFrame {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	//Componentes
+	// Componentes
 	private static DefaultModels modelVenda;
 	private static DefaultModels modelProds;
-	public static ArrayList<DbGetter> objSetterDb = new ArrayList<DbGetter>(); //Array de Objetos para adicionar no BD
+	public static ArrayList<DbGetter> objSetterDb = new ArrayList<DbGetter>(); // Array de Objetos para adicionar no BD
 	private static DbGetter prod;
 	private Conexao cone = new Conexao();
 	public static Connection con;
-	private static DBVendas dbVendas = new DBVendas();
 	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
 	private TableRowSorter<TableModel> sorterProds;
 	private String prodRow[] = new String[4];
@@ -86,20 +86,19 @@ public class MainVenda extends JFrame{
 	private String tipoPagamento = null;
 	public static DecimalFormat df = new DecimalFormat("R$0.###");
 	private NumberFormat nf = NumberFormat.getInstance();
-	private static String query = "SELECT IDPROD, CODBARRA, DESCRICAO, VLR_ULT_VENDA, QUANTIDADE, ITEN_ATIVO FROM PRODUTOS WHERE ITEN_ATIVO = 1;";
+	private static String query = "SELECT IDPROD, CODBARRA, DESCRICAO, QUANTIDADE, VLR_ULT_VENDA, ITEN_ATIVO FROM PRODUTOS WHERE ITEN_ATIVO = 1;";
 	public static int valorCaixaAberto;
 	public static Integer IdCaixa;
-	private String[] columnNamesEsto = new String[] {"Chave","Codigo", "Produto",
-			"Quantidade", "Valor"};
-	private boolean[] columnEditablesEsto = new boolean[] {false,false,false,false,false};
+	private String[] columnNamesEsto = new String[] { "Chave", "Codigo", "Produto", "Quantidade", "Valor" };
+	private boolean[] columnEditablesEsto = new boolean[] { false, false, false, false, false };
 
-	private Class<?>[] classesTableEsto = new Class<?>[] {Integer.class, String.class, 
-		String.class, Integer.class, Double.class};
-		
-	private String[]columnNameVenda = new String[] {"Quantidade", "Produto", "Valor Uni", "Valor Total"};
-	private Class<?>[] classesTableVenda = new Class<?>[] {Integer.class, String.class, Double.class, Double.class};
-	//Componentes Visuais
-	
+	private Class<?>[] classesTableEsto = new Class<?>[] { Integer.class, String.class, String.class, Integer.class,
+			Double.class };
+
+	private String[] columnNameVenda = new String[] { "Quantidade", "Produto", "Valor Uni", "Valor Total" };
+	private Class<?>[] classesTableVenda = new Class<?>[] { Integer.class, String.class, String.class, String.class };
+	// Componentes Visuais
+
 	private static JTable tabelaEstoque = new JTable();
 	private JTextField txtBusca = new JTextField();
 	private JTable tabelaVendas = new JTable();
@@ -141,15 +140,11 @@ public class MainVenda extends JFrame{
 	private final JRadioButton rdnPix = new JRadioButton("Pix");
 	private final JButton btnPedidos = new JButton();
 
-
-	
-
-	
-	public MainVenda(HashMap<String, String> config){
-		//Janela
+	public MainVenda(HashMap<String, String> config) {
+		// Janela
 		super("Vender");
 		setExtendedState(MAXIMIZED_BOTH);
-		setMinimumSize(new Dimension(800,400));
+		setMinimumSize(new Dimension(800, 400));
 		txtValorCart.setColumns(6);
 		txtValorDinheiro.setColumns(6);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -169,7 +164,13 @@ public class MainVenda extends JFrame{
 		getContentPane().setBackground(Color.WHITE);
 		setLocationRelativeTo(null);
 		modelProds = new DefaultModels(columnNamesEsto, columnEditablesEsto, classesTableEsto);
-		dbVendas.addRowTableEstoqueVenda(con, modelProds, query);
+		try {
+			DBOperations.appendAnyTable(con, query, modelProds);
+		} catch (ClassCastException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
 		sorterProds = new TableRowSorter<TableModel>(modelProds);
 		tabelaEstoque.setRowSorter(sorterProds);
 		tabelaEstoque.setModel(modelProds);
@@ -191,8 +192,8 @@ public class MainVenda extends JFrame{
 		txtValorTot.setText("R$0,0");
 		valorCaixaAberto = dbFrente.getCaixaAberto(con);
 		IdCaixa = dbFrente.getIdCaixa(con);
-		//Cores e Bordas
-		
+		// Cores e Bordas
+
 		txtQuanti.setHorizontalAlignment(SwingConstants.CENTER);
 		txtQuanti.setForeground(Color.WHITE);
 		txtQuanti.setFont(new Font("Arial", Font.PLAIN, 24));
@@ -204,9 +205,10 @@ public class MainVenda extends JFrame{
 		txtValor.setFont(new Font("Arial", Font.PLAIN, 24));
 		txtValor.setColumns(4);
 		getContentPane().setFont(new Font("Arial", Font.PLAIN, 42));
-		getContentPane().setLayout(new MigLayout("", "[575.00][137.00,grow][grow]", "[79.00][24.00][50.00][][367.00,grow][][][][5.00][67.00]"));
-		
-		//textField.setColumns(10);
+		getContentPane().setLayout(new MigLayout("", "[575.00][137.00,grow][grow]",
+				"[79.00][24.00][50.00][][367.00,grow][][][][5.00][67.00]"));
+
+		// textField.setColumns(10);
 		tabelaEstoque.setFont(new Font("Arial", Font.PLAIN, 18));
 		tabelaEstoque.setBackground(Color.LIGHT_GRAY);
 		tabelaEstoque.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -252,54 +254,54 @@ public class MainVenda extends JFrame{
 		setVisible(true);
 
 		btnRecarga.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(IdCaixa != null) {
+				if (IdCaixa != null) {
 					recargas.setVisible(true);
 					recargas.toFront();
 					recargas.requestFocus();
-				}else {
+				} else {
 					JOptionPane.showMessageDialog(null, "Favor abrir o caixa");
 				}
 			}
 		});
-		//Btn Pedidos
+		// Btn Pedidos
 		btnPedidos.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				pedidos.setVisible(true);
 				pedidos.toFront();
 				pedidos.requestFocus();
 				pedidos.setLocationRelativeTo(null);
-				pedidos.setLocation(pedidos.getLocationOnScreen().x+300, pedidos.getLocationOnScreen().y);
+				pedidos.setLocation(pedidos.getLocationOnScreen().x + 300, pedidos.getLocationOnScreen().y);
 			}
 		});
 
-		//Btn importar
+		// Btn importar
 		btnImportar.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(valorCaixaAberto == 1) {
+				if (valorCaixaAberto == 1) {
 					importarEstoque.setVisible(true);
 					importarEstoque.toFront();
 					importarEstoque.requestFocus();
-				}else {
+				} else {
 					JOptionPane.showMessageDialog(null, "Favor Abrir o Caixa");
 				}
 			}
 		});
-		//Btn Outro
+		// Btn Outro
 		btnPagamentoOutro.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(tabelaVendas.getRowCount() == 1) {
+				if (tabelaVendas.getRowCount() == 1) {
 					try {
 						JPanel panel = getPanel();
-						JOptionPane.showConfirmDialog(getFrame(), panel,"Valor",JOptionPane.OK_CANCEL_OPTION);
+						JOptionPane.showConfirmDialog(getFrame(), panel, "Valor", JOptionPane.OK_CANCEL_OPTION);
 						JTextField valorD = (JTextField) panel.getComponent(1);
 						JTextField valorC = (JTextField) panel.getComponent(3);
 						valorTotCupomCart = Double.parseDouble(valorC.getText().replace(",", "."));
@@ -319,13 +321,15 @@ public class MainVenda extends JFrame{
 						btnAdicionar.setEnabled(false);
 						rdnPix.setEnabled(false);
 					} catch (Exception e) {
-						JOptionPane.showMessageDialog(null, "Valores Invï¿½lidos");
+						JOptionPane.showMessageDialog(null, "Valores Invãlidos");
 						e.printStackTrace();
 					}
-				}else {
-					JOptionPane.showMessageDialog(null, "Para Utilizar esta funï¿½áo apenas 1 produto á permitido no cupom");
+				} else {
+					JOptionPane.showMessageDialog(null,
+							"Para Utilizar esta função apenas 1 produto á permitido no cupom");
 				}
 			}
+
 			private JPanel getPanel() {
 				JPanel panel = new JPanel();
 				panel.setLayout(new MigLayout("", "[grow]", "[][][]"));
@@ -340,40 +344,41 @@ public class MainVenda extends JFrame{
 				panel.add(txtValorCart, "cell 0 1,alignx center");
 				txtValorCart.setColumns(10);
 				return panel;
-				
+
 			}
+
 			private JFrame getFrame() {
 				JFrame frame = new JFrame();
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				frame.getContentPane().setLayout(new BorderLayout(0, 0));
-				frame.setSize(177,124);
+				frame.setSize(177, 124);
 				return frame;
 			}
 		});
-		//btn Trocas
+		// btn Trocas
 		btnTrocas.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(valorCaixaAberto == 1) {
+				if (valorCaixaAberto == 1) {
 					trocas.setVisible(true);
 					trocas.toFront();
 					trocas.requestFocus();
-				}else { 
+				} else {
 					JOptionPane.showMessageDialog(null, "Favor Abrir o Caixa");
 				}
 			}
 		});
-		
-		//btn Apagar Selecionado
+
+		// btn Apagar Selecionado
 		btnApagarS.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				int ro = tabelaVendas.getSelectedRow();
-				if(objSetterDb.size() != 0 && ro != -1) {
+				if (objSetterDb.size() != 0 && ro != -1) {
 					int res = JOptionPane.showConfirmDialog(null, "Deseja Apagar o Produto Selecionado?");
-					if(res == 0) {
+					if (res == 0) {
 						DbGetter prod = objSetterDb.get(ro);
 						double valorP = prod.getValorUn();
 						objSetterDb.remove(ro);
@@ -381,80 +386,88 @@ public class MainVenda extends JFrame{
 						ValorTotCupom = ValorTotCupom - valorP;
 						txtValorTot.setText(df.format(ValorTotCupom));
 					}
-				}else {
+				} else {
 					JOptionPane.showMessageDialog(null, "Nenhum Produto Selecionado");
 				}
 			}
 		});
-		//txtValor tecla enter
+		// txtValor tecla enter
 		txtValor.addKeyListener(new KeyListener() {
-			
 
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode() == 10) {//key enter
+				if (e.getKeyCode() == 10) {// key enter
 					btnAdicionar.requestFocus();
 				}
 			}
+
 			@Override
-			public void keyReleased(KeyEvent e) {}
+			public void keyReleased(KeyEvent e) {
+			}
+
 			@Override
-			public void keyTyped(KeyEvent e) {}});
-		
-		//txtQuanti tecla enter
+			public void keyTyped(KeyEvent e) {
+			}
+		});
+
+		// txtQuanti tecla enter
 		txtQuanti.addKeyListener(new KeyListener() {
-			
 
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode() == 10) {//key enter
+				if (e.getKeyCode() == 10) {// key enter
 					txtValor.requestFocus();
 				}
 			}
+
 			@Override
-			public void keyReleased(KeyEvent e) {}
+			public void keyReleased(KeyEvent e) {
+			}
+
 			@Override
-			public void keyTyped(KeyEvent e) {}});
-		
-		//btndesconto
+			public void keyTyped(KeyEvent e) {
+			}
+		});
+
+		// btndesconto
 		btnDesconto.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(txtDesconto.getText().length() != 0 && tabelaVendas.getRowCount() > 0) {
+				if (txtDesconto.getText().length() != 0 && tabelaVendas.getRowCount() > 0) {
 					int tblSize = tabelaVendas.getRowCount();
 					try {
 						double desconto = Double.parseDouble(txtDesconto.getText().replace(",", "."));
 						descontoVenda(tblSize, desconto, ValorTotCupom);
 						txtDesconto.setText("");
-					}catch (Exception e) {
+					} catch (Exception e) {
 						e.printStackTrace();
 						JOptionPane.showMessageDialog(new JFrame(), "Desconto invalido");
 					}
-				}else {
+				} else {
 					txtDesconto.setText("");
 				}
 			}
 		});
-		//Pressiona Botao Cancelar Venda
+		// Pressiona Botao Cancelar Venda
 
 		btnCancelar.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				int rowCount = tabelaVendas.getRowCount() ;
+				int rowCount = tabelaVendas.getRowCount();
 				txtValorTot.setText(df.format(0));
 				txtDesconto.setText("");
 				tipoPagamento = null;
 				ValorTotCupom = 0;
-				for(int i = 0;rowCount > i;i++) {
+				for (int i = 0; rowCount > i; i++) {
 					modelVenda.removeRow(0);
 				}
 				objSetterDb.clear();
 				resetTxts();
-				
+
 			}
 		});
-		//Pressiona Botao Sair Venda
+		// Pressiona Botao Sair Venda
 
 		btnSair.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -469,41 +482,44 @@ public class MainVenda extends JFrame{
 					con.close();
 					dispose();
 					InterfaceStarter.setMainVisi(true);
-				}catch (Exception e2) {
+				} catch (Exception e2) {
 					e2.printStackTrace();
-					JOptionPane.showMessageDialog(new JFrame(), "Nï¿½o Foi possï¿½vel finalizar");
+					JOptionPane.showMessageDialog(new JFrame(), "Não Foi possãvel finalizar");
 				}
 			}
 		});
-		//Pressiona Botao confirmar Venda
+		// Pressiona Botao confirmar Venda
 
 		btnConfirmar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if(objSetterDb.size() > 0 && valorCaixaAberto == 1) {
+				if (objSetterDb.size() > 0 && valorCaixaAberto == 1) {
 					LocalDate date = LocalDate.now();
 					LocalTime time = LocalTime.now();
-					
-					
+
 					try {
-						for(DbGetter prod : objSetterDb) {
+						for (DbGetter prod : objSetterDb) {
 							System.out.println(prod.getValorUn());
 							System.out.println(prod.getValorDinheiro());
 							System.out.println(prod.getValorDinheiro());
 							System.out.println("Tipo pagamento: " + tipoPagamento + LocalDateTime.now());
-							if((tipoPagamento != null&&tipoPagamento.compareTo("C")== 0) || rdnCartao.isSelected()) {
+							if ((tipoPagamento != null && tipoPagamento.compareTo("C") == 0)
+									|| rdnCartao.isSelected()) {
 								prod.setValorCartao(prod.getValorTot());
 								prod.setTipoPagamento("C");
-							}else if((tipoPagamento != null&&tipoPagamento.compareTo("D") == 0) || rdnDinheiro.isSelected()) {
+							} else if ((tipoPagamento != null && tipoPagamento.compareTo("D") == 0)
+									|| rdnDinheiro.isSelected()) {
 								prod.setValorDinheiro(prod.getValorTot());
 								prod.setTipoPagamento("D");
-							}else if((tipoPagamento != null&&tipoPagamento.compareTo("Pix") == 0) || rdnPix.isSelected()) {
+							} else if ((tipoPagamento != null && tipoPagamento.compareTo("Pix") == 0)
+									|| rdnPix.isSelected()) {
 								prod.setValorCartao(prod.getValorTot());
 								prod.setTipoPagamento("Pix");
-							}else if(tipoPagamento != null && tipoPagamento.compareTo("CD") == 0){
+							} else if (tipoPagamento != null && tipoPagamento.compareTo("CD") == 0) {
 								prod.setTipoPagamento("CD");
-							}else {
+							} else {
 								new Exception();
-								JOptionPane.showMessageDialog(null, "Metodo de pagamento invalido","Erro",JOptionPane.ERROR_MESSAGE);
+								JOptionPane.showMessageDialog(null, "Metodo de pagamento invalido", "Erro",
+										JOptionPane.ERROR_MESSAGE);
 							}
 						}
 						if (tipoPagamento.equals("Pix")) {
@@ -511,74 +527,80 @@ public class MainVenda extends JFrame{
 							printer(date, time, ValorTotCupom, cnpj);
 						}
 						tipoPagamento = null;
-						
+
 						System.out.println(prod.getValorUn());
 						System.out.println(prod.getValorDinheiro());
 						System.out.println(prod.getValorDinheiro());
 						dbFrente.updateVendas(objSetterDb, con, date, time);
 
 						int conf = JOptionPane.showConfirmDialog(new JFrame(), "Imprimir Cupom?");
-						if(conf == 0) {
+						if (conf == 0) {
 							printerCupom(objSetterDb, date, time, txtDesconto.getText());
 						}
-	
+
 						PagamentoRadio.clearSelection();
 						txtValorTot.setText(df.format(0));
 						ValorTotCupom = 0;
 						txtDesconto.setText("");
 						resetTxts();
-					    objSetterDb.clear();
-					    btnConfirmar.setEnabled(false);
-					    int rowCount = tabelaVendas.getRowCount();
-						for(int i = 0;rowCount > i;i++) {
+						objSetterDb.clear();
+						btnConfirmar.setEnabled(false);
+						int rowCount = tabelaVendas.getRowCount();
+						for (int i = 0; rowCount > i; i++) {
 							modelVenda.removeRow(0);
 						}
-					}catch (Exception e) {
+					} catch (Exception e) {
 						e.printStackTrace();
 						JOptionPane.showMessageDialog(new JFrame(), "Falha na Venda");
 					}
-						
-				}else {
-					if(valorCaixaAberto == 0) {
+
+				} else {
+					if (valorCaixaAberto == 0) {
 						JOptionPane.showMessageDialog(new JFrame(), "Favor Abrir o Caixa");
-					}else if(objSetterDb.size() < 0) {
+					} else if (objSetterDb.size() < 0) {
 						JOptionPane.showMessageDialog(new JFrame(), "Nenhum Produto em Venda");
 					}
 				}
 			}
 		});
 
-		//Double Click na tabela estoque
+		// Double Click na tabela estoque
 		tabelaEstoque.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				if(arg0.getClickCount() == 2) {
+				if (arg0.getClickCount() == 2) {
 					JTable t = (JTable) arg0.getSource();
 					int row = t.getSelectedRow();
 					String aValue = (String) t.getValueAt(row, 2);
-					setTextBusca(row, aValue); //Se a ultima venda deste produto for != 0 o valor sera adicionado no campo de valor
+					setTextBusca(row, aValue); // Se a ultima venda deste produto for != 0 o valor sera adicionado no
+												// campo de valor
 				}
 			}
 		});
-		//Click enter Tabela Estoque
+		// Click enter Tabela Estoque
 		tabelaEstoque.addKeyListener(new KeyListener() {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode() == 10) {//key enter
+				if (e.getKeyCode() == 10) {// key enter
 					int row = tabelaEstoque.getSelectionModel().getLeadSelectionIndex();
 					String aValue = (String) tabelaEstoque.getValueAt(row, 2);
-					setTextBusca(row, aValue); //Se a ultima venda deste produto for != 0 o valor sera adicionado no campo de valor
+					setTextBusca(row, aValue); // Se a ultima venda deste produto for != 0 o valor sera adicionado no
+												// campo de valor
 				}
 			}
-			
+
 			@Override
-			public void keyReleased(KeyEvent e) {}
+			public void keyReleased(KeyEvent e) {
+			}
+
 			@Override
-			public void keyTyped(KeyEvent e) {}});
-		//btn Controle Caixa
+			public void keyTyped(KeyEvent e) {
+			}
+		});
+		// btn Controle Caixa
 		btnControle.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				controleCaixa.setVisible(true);
@@ -586,70 +608,68 @@ public class MainVenda extends JFrame{
 				controleCaixa.requestFocus();
 				controleCaixa.updateFrame(con);
 				valorCaixaAberto = dbFrente.getCaixaAberto(con);
-				//Checa se o caixa esta aberto atualiza o status 
-				if(MainVenda.valorCaixaAberto == 1) {
+				// Checa se o caixa esta aberto atualiza o status
+				if (MainVenda.valorCaixaAberto == 1) {
 					controleCaixa.lblStatus.setText("Aberto");
 					controleCaixa.lblStatus.setForeground(Color.green);
-				}else if (MainVenda.valorCaixaAberto == 0) {
+				} else if (MainVenda.valorCaixaAberto == 0) {
 					controleCaixa.lblStatus.setText("Fechado");
 					controleCaixa.lblStatus.setForeground(Color.red);
 				}
-				
+
 			}
 		});
-		
-		//Listner para tecla enter ou keyup ou keydown
+
+		// Listner para tecla enter ou keyup ou keydown
 		txtBusca.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode() == 10) {//key enter
+				if (e.getKeyCode() == 10) {// key enter
 					int row = tabelaEstoque.getSelectionModel().getLeadSelectionIndex();
 					String aValue = (String) tabelaEstoque.getValueAt(row, 2);
-					setTextBusca(row, aValue); //Se a ultima venda deste produto for != 0 o valor sera adicionado no campo de valor
-				}else if(e.getKeyCode() == 38) { //key para baixo
-					int row = tabelaEstoque.getSelectionModel().getLeadSelectionIndex()-1;
+					setTextBusca(row, aValue); // Se a ultima venda deste produto for != 0 o valor sera adicionado no
+												// campo de valor
+				} else if (e.getKeyCode() == 38) { // key para baixo
+					int row = tabelaEstoque.getSelectionModel().getLeadSelectionIndex() - 1;
 					tabelaEstoque.getSelectionModel().setSelectionInterval(row, row);
-				}else if(e.getKeyCode() == 40) {  //key para cima
-					int row = tabelaEstoque.getSelectionModel().getLeadSelectionIndex()+1;
+				} else if (e.getKeyCode() == 40) { // key para cima
+					int row = tabelaEstoque.getSelectionModel().getLeadSelectionIndex() + 1;
 					tabelaEstoque.getSelectionModel().setSelectionInterval(row, row);
 				}
 			}
 		});
-		//Tecla enter Busca de Texto
-		//Busca o texto na tabela estoque
+		// Tecla enter Busca de Texto
+		// Busca o texto na tabela estoque
 		txtBusca.getDocument().addDocumentListener(new DocumentListener() {
-			
+
 			@Override
 			public void removeUpdate(DocumentEvent arg0) {
 				codeSearch(txtBusca.getText());
 			}
-			
+
 			@Override
 			public void insertUpdate(DocumentEvent arg0) {
 				codeSearch(txtBusca.getText());
 			}
-			
+
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
 				codeSearch(txtBusca.getText());
 			}
 		});
-		
-		//Botï¿½o Adicionar
+
+		// Botão Adicionar
 		btnAdicionar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				int row = tabelaEstoque.getSelectionModel().getLeadSelectionIndex();
 				String quanti = txtQuanti.getText();
 				String valorUnis = txtValor.getText().replace(",", ".");
-				
-				
-				
-				if(quanti.length() != 0 || valorUnis.length() != 0) {
+
+				if (quanti.length() != 0 || valorUnis.length() != 0) {
 					try {
 						codBarra = (String) tabelaEstoque.getValueAt(row, 1);
 						String produto = (String) tabelaEstoque.getValueAt(row, 2);
 
-						
 						valorUnis = valorUnis.replace(",", ".");
 						int idEsto = (int) tabelaEstoque.getValueAt(row, 0);
 						int quantInt = Math.abs(Integer.parseInt(quanti));
@@ -672,105 +692,103 @@ public class MainVenda extends JFrame{
 						modelVenda.addRow(prodRow);
 						ValorTotCupom = valorTotCup;
 						resetTxts();
-					}catch (Exception e) {
+					} catch (Exception e) {
 						e.printStackTrace();
-						JOptionPane.showMessageDialog(new JFrame(), "Quantidade ou Valor Invï¿½lido");
+						JOptionPane.showMessageDialog(new JFrame(), "Quantidade ou Valor Invãlido");
 					}
-				}else {
-					JOptionPane.showMessageDialog(new JFrame(), "Quantidade ou Valor Invï¿½lido");
+				} else {
+					JOptionPane.showMessageDialog(new JFrame(), "Quantidade ou Valor Invãlido");
 				}
 				txtBusca.requestFocus();
 			}
 		});
-		//Botoes Radio
+		// Botoes Radio
 		rdnDinheiro.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				btnConfirmar.setEnabled(true);
 				tipoPagamento = "D";
-				System.out.println("Pagamento dinheiro Selecionado"+ LocalDateTime.now());
+				System.out.println("Pagamento dinheiro Selecionado" + LocalDateTime.now());
 			}
 		});
-		
+
 		rdnCartao.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				btnConfirmar.setEnabled(true);
 				tipoPagamento = "C";
-				System.out.println("Pagamento cartao Selecionado"+ LocalDateTime.now());
+				System.out.println("Pagamento cartao Selecionado" + LocalDateTime.now());
 
 			}
 		});
-		
+
 		rdnPix.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				btnConfirmar.setEnabled(true);
 				tipoPagamento = "Pix";
-				System.out.println("Pagamento pix Selecionado "+ LocalDateTime.now());
+				System.out.println("Pagamento pix Selecionado " + LocalDateTime.now());
 
 			}
 		});
-		
 
-		//Layout
-				txtValorTot.setColumns(6);
-				getContentPane().add(txtBusca, "cell 0 0 3 1,grow");
-				getContentPane().add(lblQuanti, "flowx,cell 0 1,alignx left,growy");
-				getContentPane().add(txtQuanti, "flowx,cell 0 2,alignx left,growy");
-				getContentPane().add(panelEstoque, "cell 0 4 1 6,grow");
-				panelEstoque.setViewportView(tabelaEstoque);
-				getContentPane().add(panelVenda, "cell 2 4,grow");
-				panelVenda.setViewportView(tabelaVendas);
-				
-				getContentPane().add(btnPagamentoOutro, "flowx,cell 2 7,alignx right");
-				PagamentoRadio.add(rdnPix);
-				
-				getContentPane().add(rdnPix, "cell 2 7");
-				getContentPane().add(rdnCartao, "cell 2 7,alignx right");
-				
-								
-							PagamentoRadio.add(rdnCartao);
-				getContentPane().add(rdnDinheiro, "cell 2 7,alignx right");
-				PagamentoRadio.add(rdnDinheiro);
-				getContentPane().add(btnApagarS, "flowx,cell 2 5,alignx right");
-				getContentPane().add(lblNewLabel_1, "cell 2 5,alignx right");
-				getContentPane().add(txtDesconto, "cell 2 5,alignx right");
-				getContentPane().add(horizontalStrut, "cell 0 2");
-				getContentPane().add(txtValor, "cell 0 2,growy");
-				getContentPane().add(horizontalStrut_1, "cell 0 1");
-				getContentPane().add(lblValor, "cell 0 1,alignx left,growy");
-				
-				getContentPane().add(btnPedidos, "flowx,cell 2 3,alignx right");
-				
-				getContentPane().add(btnRecarga, "cell 2 3,alignx right");
-				
-				getContentPane().add(btnImportar, "cell 2 3,alignx right");
-				getContentPane().add(btnTrocas, "cell 2 3,alignx right");
-				getContentPane().add(btnControle, "cell 2 3,alignx right");
-				getContentPane().add(btnDesconto, "cell 2 6,alignx right");
-				
-				getContentPane().add(llbValorCartao, "flowx,cell 2 8,alignx right");
-				
-				getContentPane().add(txtValorCart, "cell 2 8");
-				
-				getContentPane().add(lblValorDinheiro, "cell 2 8,alignx left");
-				
-				getContentPane().add(txtValorDinheiro, "cell 2 8");
-				getContentPane().add(lblValorTot, "cell 2 8,alignx right");
-				getContentPane().add(txtValorTot, "cell 2 8,alignx right");
-				getContentPane().add(btnSair, "flowx,cell 2 9,alignx right,growy");
-				getContentPane().add(btnCancelar, "cell 2 9,alignx right,growy");
-				getContentPane().add(btnConfirmar, "cell 2 9,alignx right,growy");
-				getContentPane().add(btnAdicionar, "cell 0 2,growy");
+		// Layout
+		txtValorTot.setColumns(6);
+		getContentPane().add(txtBusca, "cell 0 0 3 1,grow");
+		getContentPane().add(lblQuanti, "flowx,cell 0 1,alignx left,growy");
+		getContentPane().add(txtQuanti, "flowx,cell 0 2,alignx left,growy");
+		getContentPane().add(panelEstoque, "cell 0 4 1 6,grow");
+		panelEstoque.setViewportView(tabelaEstoque);
+		getContentPane().add(panelVenda, "cell 2 4,grow");
+		panelVenda.setViewportView(tabelaVendas);
+
+		getContentPane().add(btnPagamentoOutro, "flowx,cell 2 7,alignx right");
+		PagamentoRadio.add(rdnPix);
+
+		getContentPane().add(rdnPix, "cell 2 7");
+		getContentPane().add(rdnCartao, "cell 2 7,alignx right");
+
+		PagamentoRadio.add(rdnCartao);
+		getContentPane().add(rdnDinheiro, "cell 2 7,alignx right");
+		PagamentoRadio.add(rdnDinheiro);
+		getContentPane().add(btnApagarS, "flowx,cell 2 5,alignx right");
+		getContentPane().add(lblNewLabel_1, "cell 2 5,alignx right");
+		getContentPane().add(txtDesconto, "cell 2 5,alignx right");
+		getContentPane().add(horizontalStrut, "cell 0 2");
+		getContentPane().add(txtValor, "cell 0 2,growy");
+		getContentPane().add(horizontalStrut_1, "cell 0 1");
+		getContentPane().add(lblValor, "cell 0 1,alignx left,growy");
+
+		getContentPane().add(btnPedidos, "flowx,cell 2 3,alignx right");
+
+		getContentPane().add(btnRecarga, "cell 2 3,alignx right");
+
+		getContentPane().add(btnImportar, "cell 2 3,alignx right");
+		getContentPane().add(btnTrocas, "cell 2 3,alignx right");
+		getContentPane().add(btnControle, "cell 2 3,alignx right");
+		getContentPane().add(btnDesconto, "cell 2 6,alignx right");
+
+		getContentPane().add(llbValorCartao, "flowx,cell 2 8,alignx right");
+
+		getContentPane().add(txtValorCart, "cell 2 8");
+
+		getContentPane().add(lblValorDinheiro, "cell 2 8,alignx left");
+
+		getContentPane().add(txtValorDinheiro, "cell 2 8");
+		getContentPane().add(lblValorTot, "cell 2 8,alignx right");
+		getContentPane().add(txtValorTot, "cell 2 8,alignx right");
+		getContentPane().add(btnSair, "flowx,cell 2 9,alignx right,growy");
+		getContentPane().add(btnCancelar, "cell 2 9,alignx right,growy");
+		getContentPane().add(btnConfirmar, "cell 2 9,alignx right,growy");
+		getContentPane().add(btnAdicionar, "cell 0 2,growy");
 		txtValorTot.setEditable(false);
 		txtValorCart.setEditable(false);
 		txtValorDinheiro.setEditable(false);
 		btnConfirmar.setEnabled(false);
-		//Botao Relatorio
+		// Botao Relatorio
 		btnRelatorio.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				relatorio.setVisible(true);
@@ -780,28 +798,33 @@ public class MainVenda extends JFrame{
 			}
 		});
 		getContentPane().add(btnRelatorio, "cell 2 3,alignx right");
-		
+
 	}
-	public static void refreshEstoque() {
+
+	public static void refreshEstoque() throws ClassCastException, SQLException {
 		modelProds.removeAllRows();
-		dbVendas.addRowTableEstoqueVenda(con, modelProds, query);
+		DBOperations.appendAnyTable(con, query, modelProds);
 		tabelaEstoque.repaint();
 	}
+
 	private void codeSearch(String busca) {
-		if(busca.length() == 0) {
+		if (busca.length() == 0) {
 			sorterProds.setRowFilter(null);
-		}else {
-		
-			sorterProds.setRowFilter(RowFilter.regexFilter("(?i)"+ Pattern.quote(busca))); //Ordena rows com a flag de Case-insensitivity
+		} else {
+
+			sorterProds.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(busca))); // Ordena rows com a flag de
+																							// Case-insensitivity
 			tabelaEstoque.getSelectionModel().setSelectionInterval(0, 0);
 		}
 	}
-	public void setNewProdVenda(Connection con,Object[] prod, double valor) {
+
+	public void setNewProdVenda(Connection con, Object[] prod, double valor) {
 		ValorTotCupom = ValorTotCupom + valor;
-		
+
 		txtValorTot.setText(df.format(ValorTotCupom));
 		modelVenda.addRow(prod);
 	}
+
 	public void setProdsDbSetter(String codBarra, String produto, int quanti, double precoUn, double precoTot) {
 		prod = new DbGetter();
 		prod.codVSetter(codBarra);
@@ -810,8 +833,9 @@ public class MainVenda extends JFrame{
 		prod.valorUniSetter(precoUn);
 		prod.valorTotalSetter(precoTot);
 		objSetterDb.add(prod);
-		
+
 	}
+
 	public void resetTxts() {
 		txtBusca.setText("");
 		txtQuanti.setText("1");
@@ -827,54 +851,59 @@ public class MainVenda extends JFrame{
 		txtValorCart.setText("R$0.00");
 		txtValorDinheiro.setText("R$0.00");
 	}
-	public void descontoVenda(int tblSize,double desconto, double valorTotCupom2) {
+
+	public void descontoVenda(int tblSize, double desconto, double valorTotCupom2) {
 		double valorTotCupo = 0;
 		double valorDescontado = valorTotCupom2 - desconto;
-		double porce =  (valorDescontado / valorTotCupom2);
-		for(int t = 0;tblSize > t ;t++) {
-				try {
-					DbGetter prod = objSetterDb.get(t);
-					double valorUn = prod.getValorUn();
-					double valorTot = prod.getValorTot();
-					double descontado = valorUn * porce;
-					double precoTotCon = ((valorTot * porce));
-					tabelaVendas.setValueAt(nf.format(descontado), t, 2);
-					tabelaVendas.setValueAt(nf.format(precoTotCon), t, 3);
-					valorTotCupo = valorTotCupo + precoTotCon;
-					prod.valorUniSetter(descontado);
-					prod.valorTotalSetter(precoTotCon);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+		double porce = (valorDescontado / valorTotCupom2);
+		for (int t = 0; tblSize > t; t++) {
+			try {
+				DbGetter prod = objSetterDb.get(t);
+				double valorUn = prod.getValorUn();
+				double valorTot = prod.getValorTot();
+				double descontado = valorUn * porce;
+				double precoTotCon = ((valorTot * porce));
+				tabelaVendas.setValueAt(nf.format(descontado), t, 2);
+				tabelaVendas.setValueAt(nf.format(precoTotCon), t, 3);
+				valorTotCupo = valorTotCupo + precoTotCon;
+				prod.valorUniSetter(descontado);
+				prod.valorTotalSetter(precoTotCon);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
 		}
 		ValorTotCupom = Double.parseDouble(nf.format(valorTotCupo));
 		txtValorTot.setText(df.format(valorTotCupo));
 	}
-	private void printerCupom(ArrayList<DbGetter> setterDb, LocalDate date, LocalTime time, String string) {
 
-		PrintRelatorios printRela = new PrintRelatorios();
-		DocPrintJob job = printRela.getPrinterJob(dbVendas.getImpressora(con));
-		DocAttributeSet das = new HashDocAttributeSet();
-		das.add(PrintQuality.HIGH);
-		das.add(MediaSizeName.ISO_A4);
-	    DocFlavor flavor = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
-	    PrintBillFormat bf = new PrintBillFormat();
-	    bf.passArrayList(dbVendas.getDadosImpressao(con),setterDb, date, time, string);
-	    SimpleDoc doc = new SimpleDoc(bf, flavor, das);
-	    try {
+	private void printerCupom(ArrayList<DbGetter> setterDb, LocalDate date, LocalTime time, String string) {
+		try {
+			PrintRelatorios printRela = new PrintRelatorios();
+			DocPrintJob job = printRela.getPrinterJob((String) DBOperations.selectSql1Dimen(con,
+					"SELECT IMPRESSORA FROM CADASTRO_LOJA WHERE ID = 1", new String[0])[0]);
+			DocAttributeSet das = new HashDocAttributeSet();
+			das.add(PrintQuality.HIGH);
+			das.add(MediaSizeName.ISO_A4);
+			DocFlavor flavor = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
+			PrintBillFormat bf = new PrintBillFormat();
+			Object[] dados =  DBOperations.selectSql2Dimen(con, "SELECT RAZAO,CNPJ,ENDERECO,CIDADE,NUMERO FROM CADASTRO_LOJA WHERE ID = 1", 5)[0];
+			String[] dadosS = new String[dados.length];
+			for(int i = 0;i<dados.length;i++) dadosS[i] = (String) dados[i];
+			bf.passArrayList(dadosS, setterDb, date, time, string);
+			SimpleDoc doc = new SimpleDoc(bf, flavor, das);
 			job.print(doc, null);
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(new JFrame(), "Falha na Impressï¿½o");
+			JOptionPane.showMessageDialog(new JFrame(), "Falha na Impressão");
 			PagamentoRadio.clearSelection();
 			txtValorTot.setText(df.format(0));
 			ValorTotCupom = 0;
 			txtDesconto.setText("");
 			resetTxts();
-		    objSetterDb.clear();
-		    btnConfirmar.setEnabled(false);
-		    int rowCount = tabelaVendas.getRowCount();
-			for(int i = 0;rowCount > i;i++) {
+			objSetterDb.clear();
+			btnConfirmar.setEnabled(false);
+			int rowCount = tabelaVendas.getRowCount();
+			for (int i = 0; rowCount > i; i++) {
 				modelVenda.removeRow(0);
 			}
 			e.printStackTrace();
@@ -885,24 +914,32 @@ public class MainVenda extends JFrame{
 		PrintRelatorios printRela = new PrintRelatorios();
 		PrintPixFormat px = new PrintPixFormat();
 		px.passArrayList(date, time, valor, cnpj);
-		printRela.printer(px, dbVendas.getImpressora(con));
+		try {
+			String printer = (String) DBOperations.selectSql1Dimen(con,
+					"SELECT IMPRESSORA FROM CADASTRO_LOJA WHERE ID = 1", new String[0])[0];
+			printRela.printer(px, printer);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
+
 	private void setTextBusca(int row, String desc) {
 		double vlr = 0.0;
 		int modelRow = tabelaEstoque.convertRowIndexToModel(row);
-		if(tabelaEstoque.getValueAt(row, 4) != null) {
+		if (tabelaEstoque.getValueAt(row, 4) != null) {
 			vlr = (double) tabelaEstoque.getValueAt(row, 4);
 		}
 		txtBusca.setText(desc);
 		int viewRow = tabelaEstoque.convertRowIndexToView(modelRow);
 		tabelaEstoque.getSelectionModel().setSelectionInterval(viewRow, viewRow);
-		if(vlr != 0) {
+		if (vlr != 0) {
 			txtValor.setText(nf.format(vlr));
 			btnAdicionar.requestFocus();
-		}else {
+		} else {
 			txtValor.requestFocus();
 		}
 	}
+
 	private void setIcons() {
 		try {
 			btnTrocas.setIcon(new ImageIcon(getClass().getResource("/trocas.png")));
@@ -911,7 +948,7 @@ public class MainVenda extends JFrame{
 			btnImportar.setIcon(new ImageIcon(getClass().getResource("/importar.png")));
 			btnRecarga.setIcon(new ImageIcon(getClass().getResource("/recarga.png")));
 			btnPedidos.setIcon(new ImageIcon(getClass().getResource("/pedido-online.png")));
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, "Falha em selecionar icones");
 		}

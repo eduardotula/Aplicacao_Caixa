@@ -15,7 +15,7 @@ import org.firebirdsql.jdbc.FBDriver;
  * Local:C:/VENDAS.FDB
  * User:SYSDBA
  * Password:masterkey
- * Conexï¿½o:localhost
+ * Conexão:localhost
  * Porta:3050
  */
 
@@ -33,7 +33,7 @@ public class Conexao {
 			return  DriverManager.getConnection("jdbc:firebirdsql://"+config.get("bancopath"), props);
 		
 		} catch (SQLException e) {
-			JOptionPane.showMessageDialog(new JFrame(), "Falha Ao obter Conexï¿½o com Database:");
+			JOptionPane.showMessageDialog(new JFrame(), "Falha Ao obter Conexão com Database:");
 			e.printStackTrace();
 			System.exit(0);
 			return null;

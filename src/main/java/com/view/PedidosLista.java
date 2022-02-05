@@ -18,6 +18,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.time.LocalDate;
@@ -48,7 +49,7 @@ import javax.swing.table.TableRowSorter;
 import com.control.PrintRelatorios;
 import com.control.TableOperations;
 import com.model.DBFrenteCaixa;
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.model.PrintPedidos;
 import com.model.PrintPedidos.PrintLista;
@@ -166,20 +167,23 @@ public class PedidosLista extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				DBVendas dbVendas = new DBVendas();
 				JFrame frame = new JFrame();
 				JTable tabelaEstoque = new JTable();
 				JTextField txtBusca = new JTextField();
 				JScrollPane scrollPane = new JScrollPane();
 				JButton btnConfirmar = new JButton("Confirmar");
 				DefaultModels modelEstoque = new DefaultModels(
-						new String[] { "ID", "CodBarra", "Descriï¿½áo", "Quantidade", "Valor Venda" },
+						new String[] { "ID", "CodBarra", "Descrição", "Quantidade", "Valor Venda" },
 						new boolean[] { false, false, false, false, false },
 						new Class<?>[] { Integer.class, String.class, String.class, Integer.class, Double.class });
 				TableRowSorter<DefaultModels> sorter = new TableRowSorter<DefaultModels>(modelEstoque);
-
-				dbVendas.addRowTableEstoqueVenda(MainVenda.con, modelEstoque,
-						"SELECT IDPROD, CODBARRA, DESCRICAO,QUANTIDADE, VLR_ULT_VENDA, ITEN_ATIVO FROM PRODUTOS WHERE ITEN_ATIVO = 1;");
+				try {
+					DBOperations.appendAnyTable(MainVenda.con, "SELECT IDPROD, CODBARRA, DESCRICAO,QUANTIDADE, VLR_ULT_VENDA, ITEN_ATIVO FROM PRODUTOS WHERE ITEN_ATIVO = 1;", modelEstoque);
+				} catch (ClassCastException e1) {
+					e1.printStackTrace();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
 				tabelaEstoque.setRowSorter(sorter);
 				tabelaEstoque.setModel(modelEstoque);
 				tabelaEstoque.getColumnModel().getColumn(2).setPreferredWidth(400);
@@ -314,7 +318,7 @@ public class PedidosLista extends JFrame {
 								txtDescriL.setText(null);
 								txtOberserL.setText(null);
 							} else {
-								JOptionPane.showMessageDialog(null, "Produto Jï¿½ cadastrado");
+								JOptionPane.showMessageDialog(null, "Produto Jã cadastrado");
 							}
 						}
 					} catch (Exception e2) {
@@ -357,7 +361,7 @@ public class PedidosLista extends JFrame {
 	}
 
 	public class Pedidos extends JFrame {
-		private DefaultModels tableModel = new DefaultModels(new String[] { "ID","Descriï¿½áo", "Cliente", "Numero", "Data" },
+		private DefaultModels tableModel = new DefaultModels(new String[] { "ID","Descrição", "Cliente", "Numero", "Data" },
 				new boolean[] { false,false, false, false, false },
 				new Class<?>[] { Integer.class, String.class, String.class, String.class, LocalDate.class });
 		/**
@@ -499,7 +503,7 @@ public class PedidosLista extends JFrame {
 
 	public class Lista extends JFrame {
 		private DefaultModels tableModel = new DefaultModels(
-				new String[] {"ID", "Cod.Barra", "Produto", "Observaï¿½áo", "Data" },
+				new String[] {"ID", "Cod.Barra", "Produto", "Observação", "Data" },
 				new boolean[] {false,false, false, false, false, false, false },
 				new Class<?>[] { Integer.class,String.class, String.class, String.class, LocalDate.class });
 		/**

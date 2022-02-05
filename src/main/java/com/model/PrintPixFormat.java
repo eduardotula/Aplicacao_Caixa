@@ -57,7 +57,7 @@ public class PrintPixFormat implements Printable{
             g2d.drawLine(-3, y, 190, y);y+=yShift;
             g2d.drawString("  Valor: "+ df.format(sang),-3,y);y+=yShift+10;
             g2d.drawString("  CNPJ ou Chave: "+ cnpj,-3,y);y+=yShift+10;
-            g2d.drawString("  Descriï¿½áo: ",-3,y);y+=yShift+50;
+            g2d.drawString("  Descrição: ",-3,y);y+=yShift+50;
             g2d.drawString("  ..",-3,y);y+=yShift+10;
 
             

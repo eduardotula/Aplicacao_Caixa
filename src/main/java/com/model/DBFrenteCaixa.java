@@ -20,7 +20,7 @@ import javax.swing.table.DefaultTableModel;
 import com.view.MainVenda;
 
 
-//Contem Todas as Operaï¿½áes de banco de dados
+//Contem Todas as Operaãáes de banco de dados
 public class DBFrenteCaixa {
 
 	PreparedStatement ps;
@@ -280,7 +280,7 @@ public class DBFrenteCaixa {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(new JFrame(), "Nï¿½o foi possivel obter Vendas");
+			JOptionPane.showMessageDialog(new JFrame(), "Não foi possivel obter Vendas");
 		}
 		return valorTotColumn;
 	}
@@ -312,7 +312,7 @@ public class DBFrenteCaixa {
 				ps.setInt(10, idProd);
 				ps.executeUpdate();
 			} catch (Exception e) {
-				JOptionPane.showMessageDialog(new JFrame(), "Nï¿½o Foi possï¿½vel Apagar");
+				JOptionPane.showMessageDialog(new JFrame(), "Não Foi possãvel Apagar");
 			}
 		}
 
@@ -323,7 +323,7 @@ public class DBFrenteCaixa {
 	public boolean OperacaoAbrirCaixa(Connection con, double valorT, String funcio) {
 		try {
 			LocalDate data = LocalDate.now();
-			// Realiza a criaï¿½áo do Caixa
+			// Realiza a criação do Caixa
 			String queryInsertControle = "INSERT INTO CONTROLECAIXA VALUES (NULL,?,?);";
 			PreparedStatement ps = con.prepareStatement(queryInsertControle);
 			ps.setDate(1, java.sql.Date.valueOf(data));
@@ -479,7 +479,7 @@ public class DBFrenteCaixa {
 			}
 		} catch (Exception e2) {
 			e2.printStackTrace();
-			JOptionPane.showMessageDialog(new JFrame(), "Valores Invï¿½lidos");
+			JOptionPane.showMessageDialog(new JFrame(), "Valores Invãlidos");
 		}
 		return 0;
 	}
@@ -538,12 +538,12 @@ public class DBFrenteCaixa {
 			JOptionPane.showMessageDialog(new JFrame(), "Caixa Fechado");
 			return somaTot;
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, "Nï¿½o foi Possï¿½vel Salvar, Chece os valores e tente Novamento");
+			JOptionPane.showMessageDialog(null, "Não foi Possãvel Salvar, Chece os valores e tente Novamento");
 			e.printStackTrace();
 			return 0.0;
 		}
 	}
-	/**Obtem todas as recargas para impressï¿½o
+	/**Obtem todas as recargas para impressão
 	 * @return */
 	public ArrayList<Recarga> getRecargas(Connection con,Integer idCaixa) {
 		try {

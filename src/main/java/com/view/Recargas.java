@@ -136,7 +136,7 @@ public class Recargas extends JFrame{
 						}
 				}catch (Exception e2) {
 					e2.printStackTrace();
-					JOptionPane.showMessageDialog(null, "Valores Invï¿½lidos");
+					JOptionPane.showMessageDialog(null, "Valores Invãlidos");
 				}
 			}
 		});

@@ -90,7 +90,7 @@ public class MenuStarter extends JFrame {
 						char[] sen = pas.getPassword();
 						String senha = new String(sen);
 						if (senha.compareTo("102030") == 0) {
-							new FrameMenuAdmin(config);
+							new FrameMenuAdmin();
 						} else {
 							JOptionPane.showMessageDialog(new JFrame(), "Senha Inválida");
 						}

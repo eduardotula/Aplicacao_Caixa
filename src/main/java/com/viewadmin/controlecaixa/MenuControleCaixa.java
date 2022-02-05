@@ -1,11 +1,13 @@
 package com.viewadmin.controlecaixa;
 
 import java.awt.Color;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 
@@ -23,7 +25,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.tablerenders_editor.TableRenderColor;
 import com.tablerenders_editor.TableRendererDate;
@@ -38,12 +40,12 @@ public class MenuControleCaixa extends JFrame{
 	 */
 	
 	private static final long serialVersionUID = 1L;
-	private DBVendas dbVendas = new DBVendas();
+	private DBOperations dbVendas = new DBOperations();
 	private LocalDate[] dataF = null;
 	private TableRowSorter<TableModel> tableSorter;
 	//DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 	private String[] columnNames = new String[]{
-			"Id Operaï¿½áo", "Data","Ver Vendas", "Ver Operaï¿½áes","Funcionario"};
+			"Id Operação", "Data","Ver Vendas", "Ver Operaãáes","Funcionario"};
 		private boolean[] columnEditables = new boolean[] {false,false,false,false,false};
 
 		private Class<?>[] classesTable = new Class<?>[] {Integer.class, LocalDate.class, 
@@ -113,30 +115,40 @@ public class MenuControleCaixa extends JFrame{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(dataF != null) {
-					String querySoma = String.format("SELECT SUM(TROCOCAIXA) AS SUMT, SUM(VALORCART) AS SUMC,SUM(VALORDINHEIRO) AS SUMD FROM OPERACOES_CAIXA"
-							+ " INNER JOIN CONTROLECAIXA ON CONTROLECAIXA.IDCAIXA = OPERACOES_CAIXA.CONTROLECAIXA_IDCAIXA"
-							+ " WHERE DATA BETWEEN '%s' AND '%s';",dataF[0],dataF[1]);
-					double[] somas = dbVendas.getFechamentoSoma(con, querySoma);
-					frameSoma(somas);
-				}else {
-					JOptionPane.showMessageDialog(null, "á Necessï¿½rio utilizar a funï¿½áo de 'Filtrar por Data' antes de exibir a soma");
-					}
+				try {
+					if(dataF != null) {
+						String querySoma = String.format("SELECT SUM(TROCOCAIXA) AS SUMT, SUM(VALORCART) AS SUMC,SUM(VALORDINHEIRO) AS SUMD FROM OPERACOES_CAIXA"
+								+ " INNER JOIN CONTROLECAIXA ON CONTROLECAIXA.IDCAIXA = OPERACOES_CAIXA.CONTROLECAIXA_IDCAIXA"
+								+ " WHERE DATA BETWEEN '%s' AND '%s';",dataF[0],dataF[1]);
+						Double[] somas = DBOperations.selectSql1Dimen(con, querySoma, new Double[0]);
+						frameSoma(somas);
+					}else {
+						JOptionPane.showMessageDialog(null, "É Necessario utilizar a função de 'Filtrar por Data' antes de exibir a soma");
+						}
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Falha","Erro",JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		});
 		mntmSomaVenda.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(dataF != null) {
-					String querySoma = String.format("SELECT SUM(V.VALORTOT) AS SUMV FROM VENDAS V "
-							+ "INNER JOIN CONTROLECAIXA C ON V.CONTROLECAIXA_IDCAIXA = C.IDCAIXA "
-							+ "WHERE C.DATA BETWEEN '%s' AND '%s'", dataF[0], dataF[1]);
-					System.out.println(querySoma);
-					double soma = dbVendas.getVendasSoma(con, querySoma);
-					frameSomaVendas(soma);
-				}else {
-					JOptionPane.showMessageDialog(null, "á Necessï¿½rio utilizar a funï¿½áo de 'Filtrar por Data' antes de exibir a soma");
+				try {
+					if(dataF != null) {
+						String querySoma = String.format("SELECT SUM(V.VALORTOT) AS SUMV FROM VENDAS V "
+								+ "INNER JOIN CONTROLECAIXA C ON V.CONTROLECAIXA_IDCAIXA = C.IDCAIXA "
+								+ "WHERE C.DATA BETWEEN '%s' AND '%s'", dataF[0], dataF[1]);
+						System.out.println(querySoma);
+						double soma = DBOperations.selectSql1Dimen(con, querySoma, new Double[0])[0];
+						frameSomaVendas(soma);
+					}else {
+						JOptionPane.showMessageDialog(null, "á Necessãrio utilizar a função de 'Filtrar por Data' antes de exibir a soma");
+					}
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Falha","Erro",JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -174,7 +186,13 @@ public class MenuControleCaixa extends JFrame{
 	}
 	public void refreshTable(Connection con, String query) {
 		DefaultModels model = new DefaultModels(columnNames, columnEditables, classesTable);
-		dbVendas.addRowTableControle(con, model, query);
+		try {
+			DBOperations.appendAnyTable(con, query, model);
+		} catch (ClassCastException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		table.setModel(model);
 		tableSorter = new TableRowSorter<TableModel>(model);
 		table.setRowSorter(tableSorter);
@@ -183,7 +201,7 @@ public class MenuControleCaixa extends JFrame{
 		table.getColumnModel().getColumn(2).setCellRenderer(new TableRenderColor());
 		table.getColumnModel().getColumn(3).setCellRenderer(new TableRenderColor());
 	}
-	private void frameSoma(double[] somas) {
+	private void frameSoma(Double[] somas) {
 		JFrame frame = new  JFrame("Soma de Fechamentos");
 		frame.getContentPane().setLayout(new MigLayout("", "[][]", "[][][]"));
 		JTextField txtTro = new JTextField(Double.toString(somas[0]));

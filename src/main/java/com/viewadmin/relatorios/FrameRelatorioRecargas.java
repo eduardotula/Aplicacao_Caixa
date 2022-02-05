@@ -27,7 +27,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
 import com.control.TableOperations;
-import com.model.DBVendas;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.tablerenders_editor.TableRendererCurrency;
 import com.tablerenders_editor.TableRendererDate;
@@ -45,7 +45,7 @@ public class FrameRelatorioRecargas extends JFrame{
 	private DefaultModels tableModel = new DefaultModels(new String[] {"ID","Recarga", "Valor", "Hora", "Data", "Pagamento", "Funcionario"}, 
 			new boolean[] {false,false,false,false,false,false,false},
 			new Class<?>[] {Integer.class, String.class,Double.class, LocalTime.class, LocalDate.class, String.class, String.class}); 
-	private DBVendas dbVendas = new DBVendas();
+	private DBOperations dbVendas = new DBOperations();
 	private DefaultComboBoxModel<String> operaModel = new DefaultComboBoxModel<String>(new String[] {"", "Vivo", "Tim", "Claro", "Oi", "Google Play"});
 	private TableRowSorter<DefaultModels> rowSorter = new TableRowSorter<DefaultModels>(tableModel);
 	public DecimalFormat df = new DecimalFormat("R$0.###");

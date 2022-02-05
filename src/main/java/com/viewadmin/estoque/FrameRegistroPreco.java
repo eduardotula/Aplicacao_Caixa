@@ -30,7 +30,7 @@ import net.miginfocom.swing.MigLayout;
 public class FrameRegistroPreco extends JFrame{
 	
 	private static final long serialVersionUID = 1L;
-	private DefaultModels model = new DefaultModels(new String[] {"Operaï¿½áo","Produto", "Valor Anterior","Valor Atualizado", "Hora","Data","Operador"}, 
+	private DefaultModels model = new DefaultModels(new String[] {"Operação","Produto", "Valor Anterior","Valor Atualizado", "Hora","Data","Operador"}, 
 			new boolean[] {false,false,false,false,false,false,false},
 			new Class<?>[] {String.class,String.class,Double.class,Double.class,LocalTime.class,LocalDate.class,String.class});
 	//Visuais
@@ -42,7 +42,7 @@ public class FrameRegistroPreco extends JFrame{
 	private final JScrollPane scrollPane = new JScrollPane();
 
 	public FrameRegistroPreco(Integer id) {
-		super("Registro de Preï¿½o");
+		super("Registro de Preão");
 		createAndShowGUI();
 		setListeners();
 		setRenders();
@@ -110,7 +110,7 @@ public class FrameRegistroPreco extends JFrame{
 			Object[] o = new Object[7];
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()) {
-				o[0] = "Mudanï¿½a de Preï¿½o";
+				o[0] = "Mudanãa de Preão";
 				o[1] = rs.getString("DESCRICAO");
 				o[2] = rs.getDouble("VALOR_ANT");
 				o[3] = rs.getDouble("VALOR_MUD");
