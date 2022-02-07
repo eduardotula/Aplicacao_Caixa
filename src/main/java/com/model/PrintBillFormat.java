@@ -76,9 +76,9 @@ public class PrintBillFormat implements Printable{
 	            for(int s=0; s<r; s++)
 	            {
 	            	DbGetter prod = prodsArray.get(s);
-	            g2d.drawString(" "+prod.getDescricao()+"                            ",-3,y);y+=yShift;
-	            g2d.drawString("      "+prod.getQuant()+" UN X "+df.format(prod.getValorUn()),70,y); g2d.drawString(""+prod.getValorTot()+"",160,y);y+=yShift;
-	            valorTOt = valorTOt + prod.getValorTot();
+	            g2d.drawString(" "+prod.getDescricaoProd()+"                            ",-3,y);y+=yShift;
+	            g2d.drawString("      "+prod.getQuanti()+" UN X "+df.format(prod.getValorUni()),70,y); g2d.drawString(""+prod.getValorTotal()+"",160,y);y+=yShift;
+	            valorTOt = valorTOt + prod.getValorTotal();
 	            }
 	            g2d.setFont(new Font("Monospaced",Font.BOLD,9));
 	            g2d.drawLine(-3, y, 190, y);y+=yShift;

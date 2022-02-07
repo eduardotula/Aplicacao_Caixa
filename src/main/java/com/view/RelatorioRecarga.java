@@ -3,6 +3,8 @@ package com.view;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -18,7 +20,8 @@ import javax.swing.table.TableRowSorter;
 
 import com.control.PrintRelatorios;
 import com.control.TableOperations;
-import com.model.DBFrenteCaixa;
+import com.model.Alerts;
+import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.model.PrintRelatorioRecargas;
 import com.model.Recarga;
@@ -37,7 +40,6 @@ public class RelatorioRecarga extends JFrame{
 	private DefaultModels tableModel = new DefaultModels(new String[] {"ID","Recarga", "Numero", "Valor", "Hora", "Data"}, 
 			new boolean[] {false,false,false,false,false},
 			new Class<?>[] {Integer.class,String.class,String.class, Double.class, LocalTime.class, LocalTime.class}); 
-	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
 	private TableRowSorter<DefaultModels> rowSorter = new TableRowSorter<DefaultModels>(tableModel);
 	private DecimalFormat df = new DecimalFormat("R$0.###");
 	private TableOperations to = new TableOperations();
@@ -95,20 +97,41 @@ public class RelatorioRecarga extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				PrintRelatorios pr = new PrintRelatorios();
 			    PrintRelatorioRecargas bf = new PrintRelatorioRecargas();
-			    ArrayList<Recarga> recargas = dbFrente.getRecargas(con, MainVenda.IdCaixa);
-			    bf.passArrayList(LocalTime.now(), dbFrente.getFuncioCaixaAtual(con), recargas);
-			    PrintRelatorios printRelatorios = new PrintRelatorios();
-			    printRelatorios.printer(bf,dbFrente.getImpressora(con));
+			    ArrayList<Recarga> recargas = new ArrayList<>();
+			    try {
+					ResultSet rs = DBOperations.selectSqlRs(con, "SELECT RECARGA,NUMERO,VALOR FROM RECARGAS WHERE CONTROLECAIXA_IDCAIXA = ?", MainVenda.IdCaixa);
+					while(rs.next()) {
+						Recarga recarg = new Recarga();
+						recarg.setOperadora(rs.getString("RECARGA"));
+						recarg.setNumero(rs.getString("NUMERO"));
+						recarg.setValor(rs.getDouble("VALOR"));
+						recargas.add(recarg);
+					}
+					bf.passArrayList(LocalTime.now(), DBOperations.selectSql1Dimen(con, "SELECT FUNCIONARIO FROM CONTROLECAIXA WHERE IDCAIXA = ?", new String[0])[0], recargas);
+					PrintRelatorios printRelatorios = new PrintRelatorios();
+					pr.choosePrintType(table, bf);
+					printRelatorios.printer(bf,PrintRelatorios.getImpressora());
+					
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					Alerts.showError("Falha ao obter regargas", getTitle());
+				}
 
-				pr.choosePrintType(table, bf);
+				
 			}
 		});
 	}
 	
 	public void refreshTable() {
-		if(MainVenda.IdCaixa != null) {
+		if(MainVenda.IdCaixa > 0) {
 			tableModel.removeAllRows();
-			txtSoma.setText(df.format(dbFrente.getRecargas(con, tableModel, MainVenda.IdCaixa)));
+			try {
+				DBOperations.appendAnyTable(con, "SELECT ID,RECARGA,NUMERO, VALOR, HORA, DATA FROM RECARGAS WHERE CONTROLECAIXA_IDCAIXA = ?", tableModel, MainVenda.IdCaixa);
+				txtSoma.setText(df.format(tableModel.sumColumn(3)));
+			} catch (SQLException e) {
+				Alerts.showError("Falha ao obter recargas", "Erro");
+				e.printStackTrace();
+			}
 			table.getColumnModel().getColumn(0).setMinWidth(0);
 			table.getColumnModel().getColumn(0).setMaxWidth(0);
 			table.getColumnModel().getColumn(1).setPreferredWidth(50);

@@ -54,7 +54,7 @@ import javax.swing.table.TableRowSorter;
 
 import com.control.Conexao;
 import com.control.PrintRelatorios;
-import com.model.DBFrenteCaixa;
+import com.model.Alerts;
 import com.model.DBOperations;
 import com.model.DbGetter;
 import com.model.DefaultModels;
@@ -76,7 +76,6 @@ public class MainVenda extends JFrame {
 	private static DbGetter prod;
 	private Conexao cone = new Conexao();
 	public static Connection con;
-	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
 	private TableRowSorter<TableModel> sorterProds;
 	private String prodRow[] = new String[4];
 	private String codBarra;
@@ -166,10 +165,11 @@ public class MainVenda extends JFrame {
 		modelProds = new DefaultModels(columnNamesEsto, columnEditablesEsto, classesTableEsto);
 		try {
 			DBOperations.appendAnyTable(con, query, modelProds);
-		} catch (ClassCastException e1) {
+			updateCaixaStatus(con);
+		} catch (Exception e1) {
 			e1.printStackTrace();
-		} catch (SQLException e1) {
-			e1.printStackTrace();
+			Alerts.showError("Falha ao carregar tabela de produtos", "Erro Grave");
+			System.exit(0);
 		}
 		sorterProds = new TableRowSorter<TableModel>(modelProds);
 		tabelaEstoque.setRowSorter(sorterProds);
@@ -190,8 +190,7 @@ public class MainVenda extends JFrame {
 		nf.setGroupingUsed(false);
 		ValorTotCupom = 0.0;
 		txtValorTot.setText("R$0,0");
-		valorCaixaAberto = dbFrente.getCaixaAberto(con);
-		IdCaixa = dbFrente.getIdCaixa(con);
+
 		// Cores e Bordas
 
 		txtQuanti.setHorizontalAlignment(SwingConstants.CENTER);
@@ -257,7 +256,7 @@ public class MainVenda extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (IdCaixa != null) {
+				if (IdCaixa > 0) {
 					recargas.setVisible(true);
 					recargas.toFront();
 					recargas.requestFocus();
@@ -380,7 +379,7 @@ public class MainVenda extends JFrame {
 					int res = JOptionPane.showConfirmDialog(null, "Deseja Apagar o Produto Selecionado?");
 					if (res == 0) {
 						DbGetter prod = objSetterDb.get(ro);
-						double valorP = prod.getValorUn();
+						double valorP = prod.getValorUni();
 						objSetterDb.remove(ro);
 						modelVenda.removeRow(ro);
 						ValorTotCupom = ValorTotCupom - valorP;
@@ -498,21 +497,18 @@ public class MainVenda extends JFrame {
 
 					try {
 						for (DbGetter prod : objSetterDb) {
-							System.out.println(prod.getValorUn());
-							System.out.println(prod.getValorDinheiro());
-							System.out.println(prod.getValorDinheiro());
 							System.out.println("Tipo pagamento: " + tipoPagamento + LocalDateTime.now());
 							if ((tipoPagamento != null && tipoPagamento.compareTo("C") == 0)
 									|| rdnCartao.isSelected()) {
-								prod.setValorCartao(prod.getValorTot());
+								prod.setValorCartao(prod.getValorTotal());
 								prod.setTipoPagamento("C");
 							} else if ((tipoPagamento != null && tipoPagamento.compareTo("D") == 0)
 									|| rdnDinheiro.isSelected()) {
-								prod.setValorDinheiro(prod.getValorTot());
+								prod.setValorDinheiro(prod.getValorTotal());
 								prod.setTipoPagamento("D");
 							} else if ((tipoPagamento != null && tipoPagamento.compareTo("Pix") == 0)
 									|| rdnPix.isSelected()) {
-								prod.setValorCartao(prod.getValorTot());
+								prod.setValorCartao(prod.getValorTotal());
 								prod.setTipoPagamento("Pix");
 							} else if (tipoPagamento != null && tipoPagamento.compareTo("CD") == 0) {
 								prod.setTipoPagamento("CD");
@@ -527,12 +523,17 @@ public class MainVenda extends JFrame {
 							printer(date, time, ValorTotCupom, cnpj);
 						}
 						tipoPagamento = null;
-
-						System.out.println(prod.getValorUn());
-						System.out.println(prod.getValorDinheiro());
-						System.out.println(prod.getValorDinheiro());
-						dbFrente.updateVendas(objSetterDb, con, date, time);
-
+						DBOperations.startTransaction(con);
+						// Insere uma venda
+						DBOperations.DmlSql(con, "INSERT INTO VENDAS VALUES(NULL, ?, ?, ?, ?, ?, ?, ?,?,?);",
+								prod.getQuanti(), prod.getValorUni(), prod.getValorDinheiro(), prod.getValorCartao(),
+								prod.getValorTotal(), prod.getTipoPagamento(), time, prod.getIdEstoque(),
+								MainVenda.IdCaixa);
+						// Atualiza a quantidade
+						DBOperations.DmlSql(con,
+								"UPDATE PRODUTOS SET QUANTIDADE = QUANTIDADE - ?, DATA_ULT_VENDA = ? WHERE IDPROD = ?; ",
+								prod.getQuanti(), date, prod.getIdEstoque());
+						DBOperations.commit(con);
 						int conf = JOptionPane.showConfirmDialog(new JFrame(), "Imprimir Cupom?");
 						if (conf == 0) {
 							printerCupom(objSetterDb, date, time, txtDesconto.getText());
@@ -551,6 +552,7 @@ public class MainVenda extends JFrame {
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
+						DBOperations.rollBack(con);
 						JOptionPane.showMessageDialog(new JFrame(), "Falha na Venda");
 					}
 
@@ -607,7 +609,7 @@ public class MainVenda extends JFrame {
 				controleCaixa.toFront();
 				controleCaixa.requestFocus();
 				controleCaixa.updateFrame(con);
-				valorCaixaAberto = dbFrente.getCaixaAberto(con);
+				updateCaixaStatus(con);
 				// Checa se o caixa esta aberto atualiza o status
 				if (MainVenda.valorCaixaAberto == 1) {
 					controleCaixa.lblStatus.setText("Aberto");
@@ -679,11 +681,11 @@ public class MainVenda extends JFrame {
 						txtValorTot.setText(df.format(valorTotCup));
 						prod = new DbGetter();
 						prod.setChaveEsto(idEsto);
-						prod.quantVSetter(quantInt);
-						prod.codVSetter(codBarra);
-						prod.descVSetter(produto);
-						prod.valorUniSetter(valoruni);
-						prod.valorTotalSetter(valorTot);
+						prod.setQuanti(quantInt);
+						prod.setCodBarra(codBarra);
+						prod.setDescricaoProd(produto);
+						prod.setValorUni(valoruni);
+						prod.setValorTotal(valorTotCup);
 						prodRow[0] = Integer.toString(quantInt);
 						prodRow[1] = produto;
 						prodRow[2] = df.format(valoruni);
@@ -827,11 +829,11 @@ public class MainVenda extends JFrame {
 
 	public void setProdsDbSetter(String codBarra, String produto, int quanti, double precoUn, double precoTot) {
 		prod = new DbGetter();
-		prod.codVSetter(codBarra);
-		prod.descVSetter(produto);
-		prod.quantVSetter(quanti);
-		prod.valorUniSetter(precoUn);
-		prod.valorTotalSetter(precoTot);
+		prod.setCodBarra(codBarra);
+		prod.setDescricaoProd(produto);
+		prod.setQuanti(quanti);
+		prod.setValorUni(precoUn);
+		prod.setValorTotal(precoTot);
 		objSetterDb.add(prod);
 
 	}
@@ -859,15 +861,15 @@ public class MainVenda extends JFrame {
 		for (int t = 0; tblSize > t; t++) {
 			try {
 				DbGetter prod = objSetterDb.get(t);
-				double valorUn = prod.getValorUn();
-				double valorTot = prod.getValorTot();
+				double valorUn = prod.getValorUni();
+				double valorTot = prod.getValorTotal();
 				double descontado = valorUn * porce;
 				double precoTotCon = ((valorTot * porce));
 				tabelaVendas.setValueAt(nf.format(descontado), t, 2);
 				tabelaVendas.setValueAt(nf.format(precoTotCon), t, 3);
 				valorTotCupo = valorTotCupo + precoTotCon;
-				prod.valorUniSetter(descontado);
-				prod.valorTotalSetter(precoTotCon);
+				prod.setValorUni(valorUn);
+				prod.setValorTotal(valorTotCupo);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -875,6 +877,25 @@ public class MainVenda extends JFrame {
 		}
 		ValorTotCupom = Double.parseDouble(nf.format(valorTotCupo));
 		txtValorTot.setText(df.format(valorTotCupo));
+	}
+
+	/**
+	 * Atualiza os campos de valorCaixaAberto e IdCaixa com valores do banco
+	 *
+	 * @param con the con
+	 */
+	private void updateCaixaStatus(Connection con) {
+		try {
+			valorCaixaAberto = DBOperations.selectSql1Dimen(con, "SELECT VALOR FROM SISTEMA WHERE IDSYS = 1;",
+					new Integer[0])[0];
+			IdCaixa = DBOperations.selectSql1Dimen(con, "SELECT VALOR2 FROM SISTEMA WHERE IDSYS = 1;",
+					new Integer[0])[0];
+			System.out.println(MainVenda.IdCaixa);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			Alerts.showError("Falha ao carregar status do caixa", "Erro Grave");
+			System.exit(0);
+		}
 	}
 
 	private void printerCupom(ArrayList<DbGetter> setterDb, LocalDate date, LocalTime time, String string) {
@@ -887,9 +908,11 @@ public class MainVenda extends JFrame {
 			das.add(MediaSizeName.ISO_A4);
 			DocFlavor flavor = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
 			PrintBillFormat bf = new PrintBillFormat();
-			Object[] dados =  DBOperations.selectSql2Dimen(con, "SELECT RAZAO,CNPJ,ENDERECO,CIDADE,NUMERO FROM CADASTRO_LOJA WHERE ID = 1", 5)[0];
+			Object[] dados = DBOperations.selectSql2Dimen(con,
+					"SELECT RAZAO,CNPJ,ENDERECO,CIDADE,NUMERO FROM CADASTRO_LOJA WHERE ID = 1", 5)[0];
 			String[] dadosS = new String[dados.length];
-			for(int i = 0;i<dados.length;i++) dadosS[i] = (String) dados[i];
+			for (int i = 0; i < dados.length; i++)
+				dadosS[i] = (String) dados[i];
 			bf.passArrayList(dadosS, setterDb, date, time, string);
 			SimpleDoc doc = new SimpleDoc(bf, flavor, das);
 			job.print(doc, null);

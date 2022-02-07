@@ -17,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
+
 public class PrintRelatorios {
 
 	public DocPrintJob getPrinterJob(String printerToUse) {
@@ -51,7 +52,15 @@ public class PrintRelatorios {
 			}
 		}
 	}
-
+	
+	/**
+	 * Obtem o nome da impressora atualmente utilizada pela aplicação.
+	 *
+	 * @return the impressora
+	 */
+	public static String getImpressora() {
+		return new EditConfigFile("config.txt").readConfig().get("impressora");
+	}
 	public void printer(Printable bf, String nomeImpressora) {
 		DocPrintJob job = getPrinterJob(nomeImpressora);
 		HashDocAttributeSet docAttSet = new HashDocAttributeSet();

@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -19,9 +20,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
+import com.model.CustomSQL;
 import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.model.ObjetoProdutoImport;
+import com.view.ImportarEstoque;
+import com.view.MainVenda;
 import com.viewadmin.FrameMenuAdmin;
 
 import net.miginfocom.swing.MigLayout;
@@ -120,45 +124,44 @@ public class FrameCadasProds extends JFrame {
 				if (tableCadas.getCellEditor() != null) {
 					tableCadas.getCellEditor().stopCellEditing();
 				}
+				int linha = 0;
 				try {
-					if (txtFornece.getText().length() > 0) {
-						while (cadasModel.getRowCount() > 0) {
-
-							String cod = (String) cadasModel.getValueAt(0, 0);
-							String desc = (String) cadasModel.getValueAt(0, 1);
-							Integer quanti = (int) cadasModel.getValueAt(0, 2);
-							Double valorC = Double
-									.parseDouble(((String) cadasModel.getValueAt(0, 3)).replace(',', '.'));
-							Double valorV = Double
-									.parseDouble(((String) cadasModel.getValueAt(0, 4)).replace(',', '.'));
-							ObjetoProdutoImport prod = new ObjetoProdutoImport(cod, desc, quanti, valorV, valorC);
-							if (cod == null || cod.isEmpty()) {
-								throw new Exception();
-							}
-							System.out.println(cadasModel.getRowCount());
-							boolean a = dbVendas.adicionarItemBd(con, prod);
-							if (a) {
-								int chave = dbVendas.getLasGeneratedKey(con);
-								dbVendas.addProdEntradas(con, quanti, valorC, valorV, chave, LocalDate.now(),
-										LocalTime.now(), "Administrador", idFornece);
-								cadasModel.removeRow(0);
-							}
+					DBOperations.startTransaction(con);
+					
+					for (int i = 0;i<cadasModel.getRowCount();i++) {
+						linha = i; 
+						linha++;
+						String cod = (String) cadasModel.getValueAt(0, 0);
+						String desc = (String) cadasModel.getValueAt(0, 1);
+						Integer quanti = (int) cadasModel.getValueAt(0, 2);
+						Double valorC = Double.parseDouble(((String) cadasModel.getValueAt(0, 3)).replace(',', '.'));
+						Double valorV = Double.parseDouble(((String) cadasModel.getValueAt(0, 4)).replace(',', '.'));
+						ObjetoProdutoImport prod = new ObjetoProdutoImport(cod, desc, quanti, valorV, valorC);
+						if (cod == null || cod.isEmpty()) {
+							throw new Exception("Codigo de barras não pode estar vazio");
 						}
-					} else {
-						JOptionPane.showMessageDialog(null, "Fornecedor não selecionado");
+						CustomSQL.cadastrarProduto(con, prod);
+						
+						int chave = (int) DBOperations.selectSqlList(con, "SELECT MAX(IDPROD) FROM PRODUTOS").get(0);
+						List<Object> id = DBOperations.selectSqlList(con, "SELECT ID FROM FORNECEDORES");
+						
+						if (id.size() == 0) {
+							throw new Exception("Nenhum fornecedor cadastrado");
+						}
+						
+						DBOperations.DmlSql(con, "INSERT INTO ENTRADAS VALUES (NULL, ?,?, ?, ?, ?, ?,?,?)", 
+								new Object[] {quanti, valorC, valorV, chave, LocalDate.now(), LocalTime.now(),
+										dbFrente.getFuncioCaixaAtual(con), id});
 					}
-
-				} catch (NumberFormatException e2) {
-					e2.printStackTrace();
-					JOptionPane.showMessageDialog(null, "Favor checar os dados da primeira linha");
-				} catch (Exception e3) {
-					e3.printStackTrace();
-					JOptionPane.showMessageDialog(null, "Favor criar um codigo para o primeiro produto");
-				}
-				if (cadasModel.getRowCount() == 0) {
+					DBOperations.commit(con);
+					ImportarEstoque.refreshEstoque(con);
+					MainVenda.refreshEstoque();
 					JOptionPane.showMessageDialog(null, "Produtos Cadastrados");
 					dispose();
-					FrameEstoqueImport.refreshEstoque(con);
+				} catch (Exception e3) {
+					e3.printStackTrace();
+					JOptionPane.showMessageDialog(null, e3.getMessage() + " linha:" + linha,"Erro",JOptionPane.ERROR_MESSAGE);
+					DBOperations.rollBack(con);
 				}
 			}
 		});

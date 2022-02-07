@@ -13,6 +13,8 @@ import java.time.LocalTime;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.firebirdsql.jdbc.field.TypeConversionException;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class DBVendas.
@@ -29,24 +31,27 @@ public class DBOperations {
 	 *
 	 * @param ps   o preparedstatement
 	 * @param sets array contendo parametros á serem inseridos na query
-	 * @throws ClassCastException the class cast exception
 	 * @throws SQLException       the SQL exception
 	 */
-	private static void setPrepared(PreparedStatement ps, Object... sets) throws ClassCastException, SQLException {
+	private static void setPrepared(PreparedStatement ps, Object... sets) throws ClassCastException , SQLException {
 		if (ps == null || ps.isClosed())
 			throw new SQLException("PreparedStatement is closed or null");
-
 		if (sets != null && sets.length > 0) {
 			int co = 1;
-			for (int i = 0; i < sets.length; i++) {
-				if (sets[i] instanceof LocalDate) {
-					ps.setDate(co, java.sql.Date.valueOf((LocalDate) sets[i]));
-				} else if (sets[i] instanceof LocalTime) {
-					ps.setTime(co, java.sql.Time.valueOf((LocalTime) sets[i]));
-				} else {
-					ps.setObject(i, sets[i]);
+			try {
+				for (int i = 0; i < sets.length; i++) {
+					if (sets[i] instanceof LocalDate) {
+						ps.setDate(co, java.sql.Date.valueOf((LocalDate) sets[i]));
+					} else if (sets[i] instanceof LocalTime) {
+						ps.setTime(co, java.sql.Time.valueOf((LocalTime) sets[i]));
+					} else {
+						ps.setObject(co, sets[i]);
+					}
+					co++;
 				}
-				co++;
+			} catch (TypeConversionException e) {
+				e.printStackTrace();
+				throw new ClassCastException("Falha ao converter objeto java para sql de indice " + co--);
 			}
 		}
 	}
@@ -89,10 +94,9 @@ public class DBOperations {
 	 * @param tableModels o modelo da tabela que será populada
 	 * @param sets        array contendo parametros á serem inseridos na query
 	 * @throws SQLException
-	 * @throws ClassCastException
 	 * @see DefaultModels
 	 */
-	public static void appendAnyTable(Connection con, String query, DefaultModels tableModels, Object... sets) throws ClassCastException, SQLException {
+	public static void appendAnyTable(Connection con, String query, DefaultModels tableModels, Object... sets) throws SQLException,ClassCastException {
 			PreparedStatement ps = con.prepareStatement(query);
 			setPrepared(ps, sets);
 			appendAnyTable(ps, tableModels);
@@ -106,10 +110,9 @@ public class DBOperations {
 	 * @param sets  array contendo parametros á serem inseridos na query
 	 * @return the result set
 	 * @throws SQLException       the SQL exception
-	 * @throws ClassCastException the class cast exception
 	 */
 	public static ResultSet selectSqlRs(Connection con, String query, Object... sets)
-			throws SQLException, ClassCastException {
+			throws SQLException,ClassCastException {
 		PreparedStatement ps = con.prepareStatement(query);
 		setPrepared(ps, sets);
 		return ps.executeQuery();
@@ -137,10 +140,9 @@ public class DBOperations {
 	 * @param quantiColunas a quantidade de colunas contida na query
 	 * @return Object[][] o array de objetos generico
 	 * @throws SQLException
-	 * @throws ClassCastException
 	 */
 	public static Object[][] selectSql2Dimen(Connection con, String query, int quantiColunas, Object... sets)
-			throws SQLException, ClassCastException {
+			throws SQLException {
 		ResultSet rs = selectSqlRs(con, query, sets);
 		LinkedList<Object[]> list = new LinkedList<Object[]>();
 		Object[] a = new Object[quantiColunas];
@@ -169,6 +171,8 @@ public class DBOperations {
 	/**
 	 * Select sql 1 dimen.
 	 *
+	 * <p>Os tipos {@link Date}, {@link Time} e {@link BigDecimal} serão convertidos
+	 * para: {@link LocalDate}, {@link LocalTime} e {@link Double} respectivamente
 	 * @param <T>   the generic type
 	 * @param con   a sessão de coneção com o banco
 	 * @param query query
@@ -176,26 +180,27 @@ public class DBOperations {
 	 * @param type  o tipo do array de objetos a ser retornado
 	 * @return the object[]
 	 * @throws SQLException       the SQL exception
-	 * @throws ClassCastException the class cast exception
 	 */
 	public static <T> T[] selectSql1Dimen(Connection con, String query, T[] type, Object... sets)
-			throws SQLException, ClassCastException {
+			throws SQLException {
 		return selectSqlList(con, query, sets).toArray(type);
 	}
 
 	/**
 	 * Retorna uma lista contendo os dados buscados na query, esta lista retorna um
 	 * objeto generico e pode retornar uma lista que não contem elementos
+	 * 
+	 * <p>Os tipos {@link Date}, {@link Time} e {@link BigDecimal} serão convertidos
+	 * para: {@link LocalDate}, {@link LocalTime} e {@link Double} respectivamente
 	 *
 	 * @param con   the con
 	 * @param query the query
 	 * @param sets  the sets
 	 * @return the list
-	 * @throws ClassCastException the class cast exception
 	 * @throws SQLException       the SQL exception
 	 */
 	public static List<Object> selectSqlList(Connection con, String query, Object... sets)
-			throws ClassCastException, SQLException {
+			throws  SQLException {
 		ResultSet rs = selectSqlRs(con, query, sets);
 		LinkedList<Object> list = new LinkedList<Object>();
 		while (rs.next()) {
@@ -216,14 +221,17 @@ public class DBOperations {
 
 	/**
 	 * Executa operações DML como (INSERT, UPDATE or DELETE)
+	 * 
+	 * <p>Os tipos {@link Date}, {@link Time} e {@link BigDecimal} serão convertidos
+	 * para: {@link LocalDate}, {@link LocalTime} e {@link Double} respectivamente.
 	 *
 	 * @param con   a sessão de coneção com o banco
 	 * @param query the query
 	 * @param sets  the sets
-	 * @throws ClassCastException the class cast exception
 	 * @throws SQLException       the SQL exception
+	 * @throws ClassCastException the class cast exception
 	 */
-	public static void DmlSql(Connection con, String query, Object... sets) throws ClassCastException, SQLException {
+	public static void DmlSql(Connection con, String query, Object... sets) throws  SQLException,ClassCastException {
 		PreparedStatement ps = con.prepareStatement(query);
 		setPrepared(ps, sets);
 		ps.executeUpdate();

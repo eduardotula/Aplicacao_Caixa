@@ -48,7 +48,7 @@ import javax.swing.table.TableRowSorter;
 
 import com.control.PrintRelatorios;
 import com.control.TableOperations;
-import com.model.DBFrenteCaixa;
+import com.model.Alerts;
 import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.model.PrintPedidos;
@@ -85,7 +85,6 @@ public class PedidosLista extends JFrame {
 	private JButton btnPedidosP;
 	private TableOperations to = new TableOperations();
 	private JPanel p;
-	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
 	private Lista lista = new Lista();
 	private Pedidos pedido = new Pedidos();
 	private Font textoFonte = new Font("Tahoma", Font.PLAIN, 11);
@@ -178,7 +177,9 @@ public class PedidosLista extends JFrame {
 						new Class<?>[] { Integer.class, String.class, String.class, Integer.class, Double.class });
 				TableRowSorter<DefaultModels> sorter = new TableRowSorter<DefaultModels>(modelEstoque);
 				try {
-					DBOperations.appendAnyTable(MainVenda.con, "SELECT IDPROD, CODBARRA, DESCRICAO,QUANTIDADE, VLR_ULT_VENDA, ITEN_ATIVO FROM PRODUTOS WHERE ITEN_ATIVO = 1;", modelEstoque);
+					DBOperations.appendAnyTable(MainVenda.con,
+							"SELECT IDPROD, CODBARRA, DESCRICAO,QUANTIDADE, VLR_ULT_VENDA, ITEN_ATIVO FROM PRODUTOS WHERE ITEN_ATIVO = 1;",
+							modelEstoque);
 				} catch (ClassCastException e1) {
 					e1.printStackTrace();
 				} catch (SQLException e1) {
@@ -361,8 +362,9 @@ public class PedidosLista extends JFrame {
 	}
 
 	public class Pedidos extends JFrame {
-		private DefaultModels tableModel = new DefaultModels(new String[] { "ID","Descrição", "Cliente", "Numero", "Data" },
-				new boolean[] { false,false, false, false, false },
+		private DefaultModels tableModel = new DefaultModels(
+				new String[] { "ID", "Descrição", "Cliente", "Numero", "Data" },
+				new boolean[] { false, false, false, false, false },
 				new Class<?>[] { Integer.class, String.class, String.class, String.class, LocalDate.class });
 		/**
 		 * 
@@ -485,7 +487,12 @@ public class PedidosLista extends JFrame {
 		public void refreshTable() {
 			String query = "SELECT ID,DESCRICAO,NOME,NUMERO, DATA FROM PEDIDOS";
 			tableModel.removeAllRows();
-			dbFrente.appendAnyTable(query, 4, tableModel, null);
+			try {
+				DBOperations.appendAnyTable(MainVenda.con, query, tableModel);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				Alerts.showError("Falha ao atualizar pedidos", "Erro");
+			}
 			setSize(600, 470);
 			TableColumnModel m = table.getColumnModel();
 			m.getColumn(0).setMinWidth(0);
@@ -503,9 +510,9 @@ public class PedidosLista extends JFrame {
 
 	public class Lista extends JFrame {
 		private DefaultModels tableModel = new DefaultModels(
-				new String[] {"ID", "Cod.Barra", "Produto", "Observação", "Data" },
-				new boolean[] {false,false, false, false, false, false, false },
-				new Class<?>[] { Integer.class,String.class, String.class, String.class, LocalDate.class });
+				new String[] { "ID", "Cod.Barra", "Produto", "Observação", "Data" },
+				new boolean[] { false, false, false, false, false, false, false },
+				new Class<?>[] { Integer.class, String.class, String.class, String.class, LocalDate.class });
 		/**
 		 * 
 		 */
@@ -626,10 +633,15 @@ public class PedidosLista extends JFrame {
 		}
 
 		public void refreshTable() {
-			String query = "SELECT ID,CODBARRA, DESCRICAO,OBSERVA, DATA FROM LISTACOMPRA";
 			tableModel.removeAllRows();
 			setSize(600, 470);
-			dbFrente.appendAnyTable(query, 4, tableModel, null);
+			try {
+				DBOperations.appendAnyTable(MainVenda.con,
+						"SELECT ID,CODBARRA, DESCRICAO,OBSERVA, DATA FROM LISTACOMPRA", tableModel);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				Alerts.showError("Falha ao atualizar lista de compras", "Erro");
+			}
 			TableColumnModel m = table.getColumnModel();
 			m.getColumn(0).setMinWidth(0);
 			m.getColumn(0).setMaxWidth(0);

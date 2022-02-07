@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -19,7 +20,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import com.control.PrintRelatorios;
-import com.model.DBFrenteCaixa;
+import com.model.Alerts;
+import com.model.CustomSQL;
+import com.model.DBOperations;
 import com.model.PrintRelatoriosFechaFormat;
 import com.model.PrintRelatoriosProds;
 import com.model.PrintSangriaFormat;
@@ -27,14 +30,11 @@ import com.model.Recarga;
 
 import net.miginfocom.swing.MigLayout;
 
-public class ControleCaixa extends JFrame{
-	
-	
-	DBFrenteCaixa dbFrente = new DBFrenteCaixa();
+public class ControleCaixa extends JFrame {
+
 	PrintRelatorios printRelatorios = new PrintRelatorios();
-	//Obje Visuais
-	
-	
+	// Obje Visuais
+
 	/**
 	 * 
 	 */
@@ -50,11 +50,10 @@ public class ControleCaixa extends JFrame{
 	final JLabel lblStatusCaixa = new JLabel("Status do Caixa:");
 	JLabel lblStatus = new JLabel("");
 	private final JButton btnReimpre = new JButton("Reimprimir ultimo caixa");
-	
 
 	public ControleCaixa(Connection con) {
 		super("Controle de Caixa");
-		setSize(288,163);
+		setSize(288, 163);
 		this.con = con;
 		setLocationRelativeTo(null);
 		getContentPane().setLayout(new MigLayout("", "[][][]", "[][][][]"));
@@ -67,104 +66,132 @@ public class ControleCaixa extends JFrame{
 		getContentPane().add(btnRet, "cell 2 1");
 		setResizable(false);
 		btnRet.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				//Checa se o caixa esta atualmente aberto
-				if(MainVenda.valorCaixaAberto == 1) {
+				// Checa se o caixa esta atualmente aberto
+				if (MainVenda.valorCaixaAberto == 1) {
 					LocalTime lt = LocalTime.now();
 					LocalDate ld = LocalDate.now();
-					double valor = dbFrente.OperacaoRet(con, lt);
-					if(valor != 0) {
+					try {
+						Integer retirada = Integer.parseInt(JOptionPane
+								.showInputDialog(new JFrame(), "Digite O Valor da Retirada").replace(",", "."));
+						DBOperations.DmlSql(con, "INSERT INTO OPERACOES_CAIXA VALUES (NULL, ?, 0,0,?, ?, ?);",
+								"Retirada", retirada, MainVenda.IdCaixa, LocalTime.now());
 						updateFrame(con);
-						printer(lt, ld, valor);
+						printer(lt, ld, retirada);
+					} catch (NumberFormatException e) {
+						Alerts.showError("Valor inválido", "Erro");
+						e.printStackTrace();
+					} catch (SQLException e) {
+						Alerts.showError(e.getMessage(), "Erro");
+						e.printStackTrace();
 					}
-				}else {
+
+				} else {
 					JOptionPane.showMessageDialog(null, "Favor Abrir o Caixa");
 				}
 			}
 		});
 		getContentPane().add(btnAbrir, "cell 0 2,alignx left");
-		
+
 		getContentPane().add(btnReimpre, "cell 1 2 2 1");
 		getContentPane().add(btnFechar, "flowx,cell 0 3,alignx left");
 		txtTroco.setEditable(false);
 		txtTroco.setColumns(10);
 		txtRetirada.setEditable(false);
 		txtRetirada.setColumns(10);
-		
+
 		getContentPane().add(lblStatusCaixa, "cell 1 3,alignx right");
-		
+
 		getContentPane().add(lblStatus, "cell 2 3,alignx left");
 		btnAbrir.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(MainVenda.valorCaixaAberto == 0) {
+				if (MainVenda.valorCaixaAberto == 0) {
 					new AbrirCaixa(con);
 					dispose();
-				}else {
+				} else {
 					JOptionPane.showMessageDialog(null, "Caixa jã Aberto");
 				}
 			}
 		});
-		
+
 		btnFechar.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//Checa se o caixa esta atualmente aberto
-				if(MainVenda.valorCaixaAberto == 1) {
+				// Checa se o caixa esta atualmente aberto
+				if (MainVenda.valorCaixaAberto == 1) {
 					new Fechamento(con);
 					dispose();
-				}else {
+				} else {
 					JOptionPane.showMessageDialog(null, "Favor Abrir o Caixa");
 				}
 			}
 		});
-		
+
 		btnReimpre.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				reimprimirCaixa();
 			}
 		});
 	}
-public void updateFrame(Connection con) {
+
+	public void updateFrame(Connection con) {
 		DecimalFormat df = new DecimalFormat("R$0.##");
-		double[] valores = dbFrente.getControleCaixaValues(con);
+		double[] valores = CustomSQL.getControleCaixaValues(con);
 		txtTroco.setText(df.format(valores[0]));
 		txtRetirada.setText(df.format(valores[1]));
-		
-	}
-	
-	private void printer(LocalTime time,LocalDate date,double sangria) {
-	    PrintSangriaFormat bf = new PrintSangriaFormat();
-	    bf.passArrayList(date, time, sangria);
-	    printRelatorios.printer(bf,dbFrente.getImpressora(con));
 
 	}
+
+	private void printer(LocalTime time, LocalDate date, double sangria) {
+		PrintSangriaFormat bf = new PrintSangriaFormat();
+		bf.passArrayList(date, time, sangria);
+		printRelatorios.printer(bf, PrintRelatorios.getImpressora());
+
+	}
+
 	private void reimprimirCaixa() {
-		if(MainVenda.IdCaixa != null) {
+		if (MainVenda.IdCaixa > 0) {
 			try {
-				int idCaixa = dbFrente.getIdCaixa(con)-1;
-				double[] valores = dbFrente.getControleCaixaValuesById(con, idCaixa);
+				int idCaixa = MainVenda.IdCaixa;
+				if (idCaixa == 1)
+					throw new Exception("Não há caixas anteriores");
+				Double[] valores = DBOperations.selectSql1Dimen(con,
+						"SELECT TROCOCAIXA,VALORDINHEIRO,VALORCART FROM OPERACOES_CAIXA "
+								+ "WHERE CONTROLECAIXA_IDCAIXA = ? AND OPERACAO = 'Caixa Fechado';",
+						new Double[0], idCaixa--);
 				ArrayList<PrintRelatoriosProds> setterDb = new ArrayList<PrintRelatoriosProds>();
-				ArrayList<Recarga> recargas = dbFrente.getRecargas(con, idCaixa);
+				ArrayList<Recarga> recargas = new ArrayList<Recarga>();
+				ResultSet rs = DBOperations.selectSqlRs(con,
+						"SELECT RECARGA,NUMERO,VALOR FROM RECARGAS WHERE CONTROLECAIXA_IDCAIXA = ?", idCaixa);
+				while (rs.next()) {
+					Recarga recarg = new Recarga();
+					recarg.setOperadora(rs.getString("RECARGA"));
+					recarg.setNumero(rs.getString("NUMERO"));
+					recarg.setValor(rs.getDouble("VALOR"));
+					recargas.add(recarg);
+				}
 				convertTable(con, setterDb, idCaixa);
-			    PrintRelatoriosFechaFormat bf = new PrintRelatoriosFechaFormat();
-			    Time time = java.sql.Time.valueOf(LocalTime.now());
-			    String func = dbFrente.getFuncioCaixaAtual(con);
-			    bf.passArrayList(setterDb, time, func, valores[0], valores[2], valores[1],valores[3],recargas);
-			    printRelatorios.printer(bf,dbFrente.getImpressora(con));
-			}catch (Exception e) {
+				PrintRelatoriosFechaFormat bf = new PrintRelatoriosFechaFormat();
+				Time time = java.sql.Time.valueOf(LocalTime.now());
+				String func = DBOperations.selectSql1Dimen(con,
+						"SELECT FUNCIONARIO FROM CONTROLECAIXA WHERE IDCAIXA = ?", new String[0], idCaixa)[0];
+				bf.passArrayList(setterDb, time, func, valores[0], valores[2], valores[1], valores[3], recargas);
+				printRelatorios.printer(bf, PrintRelatorios.getImpressora());
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}else {
+		} else {
 			JOptionPane.showMessageDialog(null, "Favor abrir o caixa");
 		}
 	}
+
 	// Copia todos as vendas do ultimo caixa para o relatorio
 	public double convertTable(Connection con, ArrayList<PrintRelatoriosProds> prodTabela, int idCaixa) {
 		try {
@@ -189,7 +216,6 @@ public void updateFrame(Connection con) {
 						hora.toString());
 				prodTabela.add(prodsPrint);
 			}
-
 
 			return somaTot;
 		} catch (Exception e) {

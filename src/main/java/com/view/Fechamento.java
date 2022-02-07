@@ -3,6 +3,7 @@ package com.view;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.Time;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -16,24 +17,23 @@ import javax.swing.JTextField;
 import javax.swing.text.MaskFormatter;
 
 import com.control.PrintRelatorios;
-import com.model.DBFrenteCaixa;
+import com.model.CustomSQL;
+import com.model.DBOperations;
 import com.model.PrintRelatoriosFechaFormat;
 import com.model.PrintRelatoriosProds;
 import com.model.Recarga;
 
 import net.miginfocom.swing.MigLayout;
 
-public class Fechamento extends JFrame{
-	
+public class Fechamento extends JFrame {
+
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	private Connection con;
-	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
+
 	private PrintRelatorios printRelatorios = new PrintRelatorios();
-	//Visuais
+	// Visuais
 	private JButton btnConfirmar = new JButton("Confirmar");
 	private JButton btnCancelar = new JButton("Cancelar");
 	private JLabel lblDinheiro = new JLabel("Retirada em Dinheiro");
@@ -45,7 +45,6 @@ public class Fechamento extends JFrame{
 
 	public Fechamento(Connection con) {
 		super("Fechar Caixa");
-		this.con = con;
 
 		setLocationRelativeTo(null);
 		setResizable(false);
@@ -57,43 +56,50 @@ public class Fechamento extends JFrame{
 		txtCart.setText("0.0");
 		txtDinheiro.setText("0.0");
 		txtTroco.setText("0.0");
-		
+
 		btnConfirmar.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					double dinhe = Double.parseDouble(txtDinheiro.getText().replace(",","." ));
+					double dinhe = Double.parseDouble(txtDinheiro.getText().replace(",", "."));
 					double cart = Double.parseDouble(txtCart.getText().replace(",", "."));
 					double troco = Double.parseDouble(txtTroco.getText().replace(",", "."));
 					double pix = Double.parseDouble(txtPix.getText().replace(",", "."));
-					String func = dbFrente.getFuncioCaixaAtual(con);
+					String func = DBOperations.selectSql1Dimen(con,
+							"SELECT FUNCIONARIO FROM CONTROLECAIXA WHERE IDCAIXA = ?", new String[0],
+							MainVenda.IdCaixa)[0];
 					Time time = java.sql.Time.valueOf(LocalTime.now());
-					int idCaixa = dbFrente.setValoresMovimento(con, time, dinhe, cart, troco);
-					if(idCaixa != 0) {
-						ArrayList<PrintRelatoriosProds> prodTabela = new ArrayList<PrintRelatoriosProds>();
-						ArrayList<Recarga> recargas = dbFrente.getRecargas(con, idCaixa);
-						double somaTot = dbFrente.convertTable(con, prodTabela, idCaixa);
-						dbFrente.setCaixaAberto(con, 0);
-						System.out.println(prodTabela.size() + somaTot +time.toString()+ dinhe+ troco+cart+ func);
-						printer(prodTabela, recargas,time, dinhe, troco,cart,pix, func);
-						MainVenda.valorCaixaAberto = 0;
-						MainVenda.IdCaixa = null;
-						dispose();
-					}else{
-						JOptionPane.showMessageDialog(null, "Falha em Fechar o Caixa: Erro IDCAIXA = 0");
+					DBOperations.DmlSql(con, "INSERT INTO OPERACOES_CAIXA VALUES (NULL,?,?,?,?,?,?);", "Caixa Fechado",
+							troco, cart, dinhe, MainVenda.IdCaixa, LocalTime.now());
+					
+					ArrayList<PrintRelatoriosProds> prodTabela = new ArrayList<PrintRelatoriosProds>();
+					ArrayList<Recarga> recargas = new ArrayList<Recarga>();
+					ResultSet rs = DBOperations.selectSqlRs(con,
+							"SELECT RECARGA,NUMERO,VALOR FROM RECARGAS WHERE CONTROLECAIXA_IDCAIXA = ?", MainVenda.IdCaixa);
+					while (rs.next()) {
+						Recarga recarg = new Recarga();
+						recarg.setOperadora(rs.getString("RECARGA"));
+						recarg.setNumero(rs.getString("NUMERO"));
+						recarg.setValor(rs.getDouble("VALOR"));
+						recargas.add(recarg);
 					}
-				}catch (Exception e2) {
+					CustomSQL.operacaoFecharCaixa(con,prodTabela,MainVenda.IdCaixa);
+					printer(prodTabela, recargas, time, dinhe, troco, cart, pix, func);
+					MainVenda.valorCaixaAberto = 0;
+					MainVenda.IdCaixa = -1;
+					dispose();
+				} catch (Exception e2) {
 					e2.printStackTrace();
 					JOptionPane.showMessageDialog(null, "Dados Invãlidos");
 				}
 			}
 		});
-		
+
 		txtPix = new JTextField();
 		txtPix.setText("0.0");
 		txtPix.setColumns(10);
-		
+
 		JLabel lblRetiradaEmPix = new JLabel("Retirada em Pix");
 		getContentPane().setLayout(new MigLayout("", "[49.00px][-32.00px][74px]", "[20px][18.00px][20px][20px][23px]"));
 		getContentPane().add(lblDinheiro, "cell 0 0,alignx left,aligny center");
@@ -106,7 +112,7 @@ public class Fechamento extends JFrame{
 		getContentPane().add(txtPix, "cell 2 2,growx,aligny top");
 		getContentPane().add(btnConfirmar, "cell 0 4,alignx left,aligny top");
 		btnCancelar.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dispose();
@@ -115,13 +121,14 @@ public class Fechamento extends JFrame{
 		getContentPane().add(btnCancelar, "cell 2 4,alignx left,aligny top");
 		setVisible(true);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		setSize(225,168);
+		setSize(225, 168);
 	}
-	private void printer(ArrayList<PrintRelatoriosProds> setterDb,ArrayList<Recarga> recargas, Time time, double dinhe, double troco, double cart,double pix, String func) {
-	    PrintRelatoriosFechaFormat bf = new PrintRelatoriosFechaFormat();
-	    bf.passArrayList(setterDb, time, func, troco, dinhe, cart,pix, recargas);
-	    printRelatorios.printer(bf,dbFrente.getImpressora(con));
 
-	    
+	private void printer(ArrayList<PrintRelatoriosProds> setterDb, ArrayList<Recarga> recargas, Time time, double dinhe,
+			double troco, double cart, double pix, String func) {
+		PrintRelatoriosFechaFormat bf = new PrintRelatoriosFechaFormat();
+		bf.passArrayList(setterDb, time, func, troco, dinhe, cart, pix, recargas);
+		printRelatorios.printer(bf, PrintRelatorios.getImpressora());
+
 	}
 }

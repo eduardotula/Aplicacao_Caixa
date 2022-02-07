@@ -10,7 +10,6 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import javax.swing.JButton;
@@ -31,7 +30,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.MaskFormatter;
 
-import com.model.DBFrenteCaixa;
 import com.model.DBOperations;
 import com.model.DbGetter;
 import com.model.DefaultModels;
@@ -45,7 +43,6 @@ public class Trocas extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 	private Connection con;
-	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
 	private DateTimeFormatter format = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
 	// Visuais
@@ -154,6 +151,7 @@ public class Trocas extends JFrame {
 						}
 					}
 					DBOperations.commit(con);
+					dispose();
 				} catch (NumberFormatException e1) {
 					JOptionPane.showMessageDialog(null, "Valores inválidos","Erro",JOptionPane.ERROR_MESSAGE);
 					e1.printStackTrace();
@@ -310,21 +308,21 @@ public class Trocas extends JFrame {
 	 * @throws SQLException the SQL exception
 	 */
 	private void trocaSemDefeito(Integer id, Double valor, String data, String desc, LocalDate dataAgora,
-			LocalTime horaAgora) throws ClassCastException, SQLException {
+			LocalTime horaAgora) throws  SQLException {
+		String funcio = DBOperations.selectSql1Dimen(con, "SELECT FUNCIONARIO FROM CONTROLECAIXA WHERE IDCAIXA = ?", new String[0], MainVenda.IdCaixa)[0];
 		DBOperations.DmlSql(con, "INSERT INTO ENTRADAS VALUES (NULL, ?,?, ?, ?, ?, ?,?,?)", 1, 0.0, 0.0, id, dataAgora,
-				horaAgora, dbFrente.getFuncioCaixaAtual(con), 1);
+				horaAgora, funcio, 1);
 		DBOperations.DmlSql(con, "UPDATE PRODUTOS SET QUANTIDADE = QUANTIDADE + ? WHERE IDPROD = ?", 1, id);
 		DBOperations.DmlSql(con, "INSERT INTO TROCAS VALUES (NULL, ?, ?, ?, ?, ?, ?)", valor, id,
 				LocalDate.parse(data, format), dataAgora, horaAgora, desc);
 	}
 
 	private void atualizarVenda(Integer id, Double valor, String data, String desc, LocalDate dataAgora,
-			LocalTime horaAgora, String opera) {
-		System.out.println(opera);
-		ArrayList<DbGetter> arr = new ArrayList<DbGetter>();
-		arr.add(new DbGetter(id, null, opera, 1, -valor, -valor, -valor, 0, "T"));
-		System.out.println(arr.get(0).getDescricao());
-		dbFrente.updateVendas(arr, con, dataAgora, horaAgora);
-		dispose();
+			LocalTime horaAgora, String opera) throws SQLException {
+		DbGetter prod = new DbGetter(id, null, opera, 1, -valor, -valor, -valor,0.0, 0, "T");
+		DBOperations.DmlSql(con, "INSERT INTO VENDAS VALUES(NULL, ?, ?, ?, ?, ?, ?, ?,?,?);",
+				prod.getCodBarra(), prod.getValorUni(), prod.getValorDinheiro(), prod.getValorCartao(),
+				prod.getValorTotal(), prod.getTipoPagamento(), LocalTime.now(), prod.getIdEstoque(),
+				MainVenda.IdCaixa);
 	}
 }

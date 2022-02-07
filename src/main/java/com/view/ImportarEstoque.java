@@ -32,7 +32,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableRowSorter;
 
 import com.model.CustomSQL;
-import com.model.DBFrenteCaixa;
 import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.model.ObjetoProdutoImport;
@@ -57,7 +56,6 @@ public class ImportarEstoque extends JFrame {
 	private NumberFormat nf = NumberFormat.getInstance();
 	private static DefaultModels estomodel;
 	private static TableRowSorter<DefaultModels> rowSorterEsto;
-	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
 
 	// Visuais
 	JScrollPane scrollPane = new JScrollPane();
@@ -240,9 +238,10 @@ public class ImportarEstoque extends JFrame {
 							// Busca pelo ulti valor de venda de um produto
 							Double valorProd = (Double) DBOperations.selectSqlList(con,
 									"SELECT VLR_ULT_VENDA FROM PRODUTOS WHERE IDPROD = ?", prod.getChave()).get(0);
+							String funcio = DBOperations.selectSql1Dimen(con, "SELECT FUNCIONARIO FROM CONTROLECAIXA WHERE IDCAIXA = ?", new String[0], MainVenda.IdCaixa)[0];
 							// Insere um novo registro de mudança de preco do produto
 							DBOperations.DmlSql(con, "INSERT INTO MUDANCA_PRECO VALUES(NULL,?,?,?,?,?,?)",
-									new Object[] { valorProd, prod.getValorUltV(), dbFrente.getFuncioCaixaAtual(con),
+									new Object[] { valorProd, prod.getValorUltV(), funcio,
 											prod.getChave() });
 
 						} else {

@@ -3,6 +3,7 @@ package com.view;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -12,50 +13,60 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import com.model.DBFrenteCaixa;
+import com.model.Alerts;
+import com.model.CustomSQL;
 import com.model.DBOperations;
 
 import net.miginfocom.swing.MigLayout;
 
-public class AbrirCaixa extends JFrame{
+public class AbrirCaixa extends JFrame {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
-	//Visuais
+	// Visuais
 	private JTextField txtTroco = new JTextField();
 	private JComboBox<String> func = new JComboBox<String>();
 	private JLabel lblTroco = new JLabel("Troco");
 	private JLabel lblFuncio = new JLabel("Nome");
 	private JButton btnAbrir = new JButton("Abrir Caixa");
-	
+
 	public AbrirCaixa(Connection con) {
 		super("Abrir Caixa");
 		setVisible(true);
-		setSize(240,157);
+		setSize(240, 157);
 		setLocationRelativeTo(null);
-		
+
 		btnAbrir.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					double valorT = Double.parseDouble(txtTroco.getText().replace(",", "."));
 					String funcio = (String) func.getSelectedItem();
-					if(!funcio.isEmpty() || !txtTroco.getText().isEmpty()) {
-						boolean v = dbFrente.OperacaoAbrirCaixa(con, valorT, funcio);
-						if(v) {
-							MainVenda.valorCaixaAberto = 1;
-							MainVenda.IdCaixa = dbFrente.getIdCaixa(con);
-							dispose();
-						}
-					}else {
+					if (!funcio.isEmpty() || !txtTroco.getText().isEmpty()) {
+						DBOperations.startTransaction(con);
+						CustomSQL.OperacaoAbrirCaixa(con, valorT, funcio);
+						MainVenda.valorCaixaAberto = 1;
+						MainVenda.IdCaixa = DBOperations.selectSql1Dimen(con, "SELECT VALOR2 FROM SISTEMA WHERE IDSYS = 1",
+								new Integer[0])[0];
+						DBOperations.commit(con);
+						Alerts.showMessage("Caixa Aberto", null);
+						dispose();
+					} else {
 						JOptionPane.showMessageDialog(null, "Campos invalidos");
 					}
-				}catch (Exception e2) {
+				} catch (NumberFormatException e1) {
+					Alerts.showError("Valor de troco inválido","Erro");
+					e1.printStackTrace();
+					DBOperations.rollBack(con);
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+					Alerts.showError("Erro", "Erro");
+					DBOperations.rollBack(con);
+				} catch (Exception e2) {
 					e2.printStackTrace();
-					JOptionPane.showMessageDialog(null, "Campos invalidos");
+					DBOperations.rollBack(con);
 				}
 			}
 		});
@@ -73,13 +84,14 @@ public class AbrirCaixa extends JFrame{
 	private void getFuncionario(Connection con) {
 		String[] funcio;
 		try {
-			funcio = (String[]) DBOperations.selectSql1Dimen(con, "SELECT NOME FROM FUNCIONARIOS",new String[0]);
+			funcio = (String[]) DBOperations.selectSql1Dimen(con, "SELECT NOME FROM FUNCIONARIOS", new String[0]);
 			DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>(funcio);
 			model.addElement("");
 			func.setModel(model);
 		} catch (Exception e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Falha ao carregar lista de funcionarios","Erro",JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Falha ao carregar lista de funcionarios", "Erro",
+					JOptionPane.ERROR_MESSAGE);
 		}
 
 	}

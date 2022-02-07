@@ -9,7 +9,8 @@ public class DbGetter {
 	private double valorUni;
 	private double valorDinheiro;
 	private double valorCartao;
-	private double valorTota;
+	private double valorTotal;
+	private double valorCusto;
 	private String tipoPagamento;
 	
 
@@ -22,20 +23,52 @@ public class DbGetter {
 	}
 	public DbGetter() {
 	}
-	public DbGetter(int idEstoque, String codBarra, String descricaoProd, int quanti, double valorTota,
-			double valorUni, double valorDinheiro, double valorCartao, String tipoPagamento) {
+
+	
+	public DbGetter(int idEstoque, String codBarra, String descricaoProd, int quanti, double valorUni,
+			double valorDinheiro, double valorCartao, double valorTotal, double valorCusto, String tipoPagamento) {
 		super();
 		this.idEstoque = idEstoque;
 		this.codBarra = codBarra;
 		this.descricaoProd = descricaoProd;
 		this.quanti = quanti;
-		this.valorTota = valorTota;
 		this.valorUni = valorUni;
 		this.valorDinheiro = valorDinheiro;
 		this.valorCartao = valorCartao;
+		this.valorTotal = valorTotal;
+		this.valorCusto = valorCusto;
 		this.tipoPagamento = tipoPagamento;
 	}
-	
+	public int getIdEstoque() {
+		return idEstoque;
+	}
+	public void setIdEstoque(int idEstoque) {
+		this.idEstoque = idEstoque;
+	}
+	public String getCodBarra() {
+		return codBarra;
+	}
+	public void setCodBarra(String codBarra) {
+		this.codBarra = codBarra;
+	}
+	public String getDescricaoProd() {
+		return descricaoProd;
+	}
+	public void setDescricaoProd(String descricaoProd) {
+		this.descricaoProd = descricaoProd;
+	}
+	public int getQuanti() {
+		return quanti;
+	}
+	public void setQuanti(int quanti) {
+		this.quanti = quanti;
+	}
+	public double getValorUni() {
+		return valorUni;
+	}
+	public void setValorUni(double valorUni) {
+		this.valorUni = valorUni;
+	}
 	public double getValorDinheiro() {
 		return valorDinheiro;
 	}
@@ -48,62 +81,25 @@ public class DbGetter {
 	public void setValorCartao(double valorCartao) {
 		this.valorCartao = valorCartao;
 	}
-	public void codVSetter(String codBarra) {
-		this.codBarra = codBarra;
+	public double getValorTotal() {
+		return valorTotal;
 	}
-	
-	public void descVSetter(String descVenda) {
-		this.descricaoProd = descVenda;
+	public void setValorTotal(double valorTotal) {
+		this.valorTotal = valorTotal;
 	}
-	
-	public void quantVSetter(int quanti) {
-		this.quanti = quanti;
+	public double getValorCusto() {
+		return valorCusto;
 	}
-	
-	public void valorTotalSetter(double precoTotCon) {
-		this.valorTota = precoTotCon;
+	public void setValorCusto(double valorCusto) {
+		this.valorCusto = valorCusto;
 	}
-	
-	
 	public String getTipoPagamento() {
 		return tipoPagamento;
 	}
 	public void setTipoPagamento(String tipoPagamento) {
 		this.tipoPagamento = tipoPagamento;
 	}
-	public void valorUniSetter(double descontado) {
-		this.valorUni = descontado;
-	}
-
 	
-	//Venda Getters
-
-	public double getValorUn() {
-		return valorUni;
-	}
-	public String getCodBarra(){
-		return codBarra;
-	}
-	
-	public String getDescricao(){
-		return descricaoProd;
-	}
-	
-	public int getQuant(){
-		
-		return quanti;
-	}
-	
-	public double getValorTot(){
-		return valorTota;
-	}
-
-	public int getChaveEsto() {
-		return idEstoque;
-	}
-
-
-
 
 
 	

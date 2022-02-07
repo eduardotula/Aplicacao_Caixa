@@ -1,5 +1,6 @@
 backup=true
 backuppath=C:\Users\loja 65\Google Drive\Backup Frente 65\Backup
 bancopath=localhost/C:\ProgramaFrente\VENDAS40N.fdb
-bancofullpath=S:/ProgramaFrente/VENDASN.fdb
+bancofullpath=S:/ProgramaFrente/VEN
 setcommit=true
+impressora=IMPRESSORA TERMICA

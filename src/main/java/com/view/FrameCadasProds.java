@@ -20,7 +20,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import com.model.CustomSQL;
-import com.model.DBFrenteCaixa;
 import com.model.DBOperations;
 import com.model.DefaultModels;
 import com.model.ObjetoProdutoImport;
@@ -38,7 +37,6 @@ public class FrameCadasProds extends JFrame {
 	private Class<?>[] classesTableEsto = new Class<?>[] { String.class, String.class, Integer.class, String.class,
 			String.class };
 	private DefaultModels cadasModel = new DefaultModels(columnNamesCadas, columnEditablesCadas, classesTableEsto);
-	private DBFrenteCaixa dbFrente = new DBFrenteCaixa();
 	private Connection con;
 	// Visuais
 	private JTable tableCadas = new JTable();
@@ -84,9 +82,9 @@ public class FrameCadasProds extends JFrame {
 				int linha = 0;
 				try {
 					DBOperations.startTransaction(con);
-					
-					for (int i = 0;i<cadasModel.getRowCount();i++) {
-						linha = i; 
+
+					for (int i = 0; i < cadasModel.getRowCount(); i++) {
+						linha = i;
 						linha++;
 						String cod = (String) cadasModel.getValueAt(0, 0);
 						String desc = (String) cadasModel.getValueAt(0, 1);
@@ -98,17 +96,19 @@ public class FrameCadasProds extends JFrame {
 							throw new Exception("Codigo de barras não pode estar vazio");
 						}
 						CustomSQL.cadastrarProduto(con, prod);
-						
+
 						int chave = (int) DBOperations.selectSqlList(con, "SELECT MAX(IDPROD) FROM PRODUTOS").get(0);
 						List<Object> id = DBOperations.selectSqlList(con, "SELECT ID FROM FORNECEDORES");
-						
+
 						if (id.size() == 0) {
 							throw new Exception("Nenhum fornecedor cadastrado");
 						}
-						
-						DBOperations.DmlSql(con, "INSERT INTO ENTRADAS VALUES (NULL, ?,?, ?, ?, ?, ?,?,?)", 
-								new Object[] {quanti, valorC, valorV, chave, LocalDate.now(), LocalTime.now(),
-										dbFrente.getFuncioCaixaAtual(con), id});
+
+						String funcio = DBOperations.selectSql1Dimen(con,
+								"SELECT FUNCIONARIO FROM CONTROLECAIXA WHERE IDCAIXA = ?", new String[0], id)[0];
+						DBOperations.DmlSql(con, "INSERT INTO ENTRADAS VALUES (NULL, ?,?, ?, ?, ?, ?,?,?)",
+								new Object[] { quanti, valorC, valorV, chave, LocalDate.now(), LocalTime.now(), funcio,
+										id });
 					}
 					DBOperations.commit(con);
 					ImportarEstoque.refreshEstoque(con);
@@ -117,7 +117,8 @@ public class FrameCadasProds extends JFrame {
 					dispose();
 				} catch (Exception e3) {
 					e3.printStackTrace();
-					JOptionPane.showMessageDialog(null, e3.getMessage() + " linha:" + linha,"Erro",JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, e3.getMessage() + " linha:" + linha, "Erro",
+							JOptionPane.ERROR_MESSAGE);
 					DBOperations.rollBack(con);
 				}
 			}

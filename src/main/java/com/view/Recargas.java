@@ -7,7 +7,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -21,19 +20,22 @@ import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+import com.model.DBOperations;
+
 import net.miginfocom.swing.MigLayout;
 
-public class Recargas extends JFrame{
+public class Recargas extends JFrame {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private DefaultComboBoxModel<String> comboModel = new DefaultComboBoxModel<String>(new String[] {"Operadora", "VIVO", "TIM", "CLARO", "OI", "OUTRA"});
+	private DefaultComboBoxModel<String> comboModel = new DefaultComboBoxModel<String>(
+			new String[] { "Operadora", "VIVO", "TIM", "CLARO", "OI", "OUTRA" });
 	private RelatorioRecarga recarga = new RelatorioRecarga(MainVenda.con);
-	private JTextField 	txtNumero = new JTextField();
-	private JTextField	txtValor = new JTextField("R$0.00");
+	private JTextField txtNumero = new JTextField();
+	private JTextField txtValor = new JTextField("R$0.00");
 	private JComboBox<String> comboBox = new JComboBox<String>();
 	private JLabel lblOperadora = new JLabel("Operadora");
 	private JLabel lblNumero = new JLabel("Numero");
@@ -52,9 +54,9 @@ public class Recargas extends JFrame{
 		createAndShowGUI();
 		setListeners();
 	}
-	
+
 	public void createAndShowGUI() {
-		setSize(296,233);
+		setSize(296, 233);
 		setLocationRelativeTo(null);
 		setVisible(false);
 		getContentPane().setLayout(new MigLayout("", "[142.00,grow][grow]", "[][][][][][][]"));
@@ -69,26 +71,27 @@ public class Recargas extends JFrame{
 		txtValor.setColumns(10);
 		comboBox.setModel(comboModel);
 		txtOutra.setEditable(false);
-		
+
 		getContentPane().add(lblPagamento, "flowx,cell 0 5");
 		buttonGroup.add(rdnDinheiro);
-		
+
 		getContentPane().add(rdnDinheiro, "cell 1 5");
 		getContentPane().add(btnRelatorios, "cell 0 6");
 		getContentPane().add(btnConfirmar, "cell 1 6,alignx right");
 		buttonGroup.add(rdnCartao);
 		getContentPane().add(rdnCartao, "cell 0 5");
-		recarga.setLocation(this.getLocation().x-300, this.getLocation().y);
+		recarga.setLocation(this.getLocation().x - 300, this.getLocation().y);
 	}
+
 	public void setListeners() {
 		addWindowListener(new WindowAdapter() {
-			 public void windowClosing(WindowEvent e) {
-				 recarga.setVisible(false);
-			 }
-			
+			public void windowClosing(WindowEvent e) {
+				recarga.setVisible(false);
+			}
+
 		});
 		btnRelatorios.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				recarga.setVisible(true);
@@ -98,62 +101,61 @@ public class Recargas extends JFrame{
 			}
 		});
 		txtValor.addMouseListener(new MouseAdapter() {
-			 public void mouseReleased(MouseEvent e) {
-				 txtValor.selectAll();
-			 }
+			public void mouseReleased(MouseEvent e) {
+				txtValor.selectAll();
+			}
 		});
 		comboBox.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(comboBox.getSelectedIndex() == 5) {
+				if (comboBox.getSelectedIndex() == 5) {
 					txtOutra.setEditable(true);
-				}else {
+				} else {
 					txtOutra.setEditable(false);
 				}
 			}
 		});
 		btnConfirmar.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					if(comboBox.getSelectedIndex() != 0) {
-						if(rdnCartao.isSelected() || rdnDinheiro.isSelected()) {
+					if (comboBox.getSelectedIndex() != 0) {
+						if (rdnCartao.isSelected() || rdnDinheiro.isSelected()) {
 							String opera = (String) comboBox.getSelectedItem();
 							String numero = txtNumero.getText();
 							Double valor = Double.parseDouble(txtValor.getText().replace(",", "."));
 							String pagamento = null;
-							if(rdnCartao.isSelected()) { pagamento = "C";}else if(rdnDinheiro.isSelected()) { pagamento = "D";}
-							salvarRecarga(MainVenda.con,opera, numero, valor, pagamento);
+							if (rdnCartao.isSelected()) {
+								pagamento = "C";
+							} else if (rdnDinheiro.isSelected()) {
+								pagamento = "D";
+							}
+							salvarRecarga(MainVenda.con, opera, numero, valor, pagamento);
 							resetText();
 							fechar();
-						}else {
+						} else {
 							JOptionPane.showMessageDialog(null, "Selecione Metodo de Pagamento");
 						}
-					}else {
+					} else {
 						JOptionPane.showMessageDialog(null, "Selecione uma Operadora");
-						}
-				}catch (Exception e2) {
+					}
+				} catch (Exception e2) {
 					e2.printStackTrace();
-					JOptionPane.showMessageDialog(null, "Valores Invãlidos");
+					JOptionPane.showMessageDialog(null, "Valores Inválidos");
 				}
 			}
 		});
 	}
-	
-	public void salvarRecarga(Connection con, String opera, String numero, Double valor, String pagamento) throws Exception{
-			PreparedStatement ps = con.prepareStatement("INSERT INTO RECARGAS VALUES(NULL, ?,?,?,?,?,?,?)");
-			ps.setString(1, opera);
-			ps.setString(2, numero);
-			ps.setDouble(3, valor);
-			ps.setTime(4, java.sql.Time.valueOf(LocalTime.now()));
-			ps.setDate(5, java.sql.Date.valueOf(LocalDate.now()));
-			ps.setString(6, pagamento);
-			ps.setInt(7, MainVenda.IdCaixa);
-			ps.executeUpdate();
+
+	public void salvarRecarga(Connection con, String opera, String numero, Double valor, String pagamento)
+			throws Exception {
+		DBOperations.DmlSql(con, "INSERT INTO RECARGAS VALUES(NULL, ?,?,?,?,?,?,?)", opera, numero, valor,
+				LocalTime.now(), LocalDate.now(), pagamento, MainVenda.IdCaixa);
 	}
-	public void resetText(){
+
+	public void resetText() {
 		comboBox.setSelectedIndex(0);
 		txtNumero.setText(null);
 		txtOutra.setText(null);
@@ -164,6 +166,7 @@ public class Recargas extends JFrame{
 		rdnDinheiro.setSelected(false);
 		rdnDinheiro.setSelected(false);
 	}
+
 	public void fechar() {
 		dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
